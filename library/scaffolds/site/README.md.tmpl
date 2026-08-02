@@ -1,0 +1,54 @@
+# {{instance_name}}-site
+
+Hugo site for **{{instance_name}}**. Scaffolded by kestrel's
+`/instantiate-site` meta-skill (ROADMAP/KITS.md §3/§5) from
+`library/scaffolds/site/`.
+
+## Content-writer contract
+
+Registry/attention-derived content is written ONLY by the kestrel publish
+core, through this instance's own adapter (the single-content-writer
+invariant, ROADMAP/DESIGN.md §1: "A site repo has exactly one content
+writer: the publish core, through that site's adapter"). Once that adapter
+exists (see `/instantiate-site`'s adapter-stub step), do not hand-edit
+whatever paths it owns — those belong upstream, in the data repo or the
+adapter.
+
+Editorial chrome — `layouts/`, `static/css/`, and any hand-authored
+editorial pages you add under `content/` — is normal repo-owned code,
+edited directly. The invariant governs generated content only, never the
+site chrome.
+
+## Fonts
+
+None are bundled here. Fonts are a brand asset, chosen per-site once this
+instance has a real design system — self-hosting under `static/fonts/` is
+a proven pattern elsewhere in this fleet, but it is not a default to
+inherit sight-unseen; pick fonts deliberately, later.
+
+## Build & deploy
+
+- Local: `hugo --minify` (targets Hugo 0.111.3-extended; no theme
+  dependencies, no Hugo modules, no external assets referenced at build
+  time).
+- Cloudflare: build command `hugo`, output directory `public`, with
+  `HUGO_VERSION` pinned to match. `static/_headers` carries baseline
+  security headers; `enableRobotsTXT` is on in `hugo.yaml`.
+- Before this repo builds for real: set a real `baseURL` in `hugo.yaml`
+  (currently a placeholder), and give it a real Cloudflare Pages/Workers
+  project `name` in `wrangler.toml` if that should differ from
+  `{{instance_name}}`. Both are Ben's calls, not this scaffold's.
+
+## Next steps
+
+1. Choose this instance's brand palette and type system, and fill in the
+   commented custom properties in `static/css/main.css`.
+2. Write this instance's own `publish/adapter.py` **in the sibling data
+   repo** (declared via that repo's `kestrel.yaml` `outputs.adapter` —
+   adapters are instance-owned, not engine code) — the `/instantiate-site`
+   skill sketches its shape (module docstring, `ROOT`/env resolution,
+   empty build hooks); it ships as a `NotImplementedError` stub, not
+   working code, at this phase.
+3. Register this site as some data instance's `site:` sibling in
+   kestrel's own `instances.yaml`, then run `/install-kit` against it to
+   bring in this site's agent docs.

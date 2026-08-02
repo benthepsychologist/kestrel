@@ -1,0 +1,34 @@
+# kestrel.yaml — instance manifest (ROADMAP/DESIGN.md §2, ROADMAP/KITS.md §1).
+# Scaffolded by /instantiate-data (kind: attention), layout distilled from a
+# proven attention instance's own manifest. Fill in the placeholder comments
+# below before this instance's first run; nothing here ships as a literal
+# beyond what /instantiate-data itself rendered (this instance's name).
+kind: attention
+name: {{instance_name}}
+contract_version: 1
+layout:
+  attention: attention/          # the map: watchlist, threads, upcoming, board…
+  artifacts: artifacts/          # digests, timelines, bundles, readouts, read page
+  digests: artifacts/digests/daily/
+  threads: artifacts/threads/
+  sources: sources/               # sources.yaml, feeds.yaml, benchmarks.yaml —
+                                   # populate per source, once chosen
+  templates: templates/           # digest + read-shell templates
+  buffer: buffer/                 # 30-day cache semantics — gitignored,
+                                   # created on demand, never committed
+  snapshots: snapshots/           # page-diff prior-snapshot store
+  provenance: provenance/         # per-run fetch + publish manifests
+governance:
+  yaml: safe-load-or-revert
+  attention_edits: steering-loop-only   # provenance tag every change (CLAUDE.md)
+
+# outputs:
+#   site: ../{{instance_name}}-site      # fill in once /instantiate-site
+#                                        # creates the sibling site repo
+#   adapter: {{instance_name}}          # this instance's tools/publish
+#                                        # adapter name (see /instantiate-site)
+#
+# Once a sibling site exists, register this instance in kestrel's own
+# instances.yaml ({path, kind, site, render: {lens_set: "..."}}) — naming
+# this instance's own lens set there is what /install-kit and /sync-kits
+# use to render the lens_set-dependent parts of this instance's kit.

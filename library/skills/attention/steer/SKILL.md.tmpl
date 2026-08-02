@@ -1,0 +1,105 @@
+<!-- kit: attention/steer@{{kit_version}} — canonical: {{engine_path}}/library/skills/attention/steer/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+
+---
+name: steer
+description: Apply a steering utterance to the attention map — track X, drop Y, add a question, go deeper on Z. One command, small provenance-tagged edits, immediate.
+argument-hint: <track X | drop Y | thread: Z | resolve <slug> | ask: <question>>
+---
+
+# /steer <utterance> — move the map
+
+The lowest-friction write path. Ben speaks; the map moves; every edit is
+logged. Examples:
+
+- `/steer track Ksana Health under mental-health` → watchlist org add
+- `/steer drop Pear Therapeutics, it's dead` → watchlist removal
+- `/steer thread: UHS-Talkspace close` → new thread (drafted from context,
+  shown before saving; timeline file seeded in `artifacts/threads/`)
+- `/steer resolve gpt-5.6-release` → thread status flip (+ closing timeline
+  entry)
+- `/steer deeper on ai-circular-financing-risk` → hand off to `/crawl`
+- `/steer ask: is anyone actually auditing therapy chatbots?` → new radar Q
+- `/steer expect Gemini 3.5 Pro by Aug 15` → `upcoming.yaml` add
+  (`logged_by: ben-steer`)
+- `/steer slip deepseek-v4-stable to 07-31` · `/steer confirm cxmt-star-listing`
+  → expectation status flips
+- `/steer entity "Elon Musk xAI" is elon-musk` → watchlist mapping-form edit
+- `/steer weight kaiser-ai-clinician-backlash 3` → thread importance (1–3;
+  amplifies move-size in the read's ranking)
+- `/steer tag the SoftBank fee story to stargate-buildout` → digest
+  annotation + timeline fix
+- `/steer set posture openai expanding` → board org posture (drops the
+  `# provisional` marker)
+- `/steer set cap openai constrained ~$60B` · `/steer set gravity nvidia
+  ...` → set an actor's axis estimate (capitalization/optionality/gravity)
+- `/steer move china to state` → **kind change (an event — loud, logged,
+  thread offered; never silent)**
+- `/steer set condition apple in-succession` · `/steer clear condition
+  meta-ai under-review` → board condition on an org
+- `/steer set genre red-sea-oil-shock exogenous-shock` → thread genre
+- `/steer add house "Masayoshi Son"; holds softbank` → new board House +
+  its held realm (`held_by` on the org)
+- `/steer add actor "Perplexity" as kingdom, sphere us` → new board org
+  (adds to watchlist too if sweepable)
+
+## Board verbs (`attention/board.yaml`)
+
+The board is part of the map — these edits go to `attention/board.yaml`
+(the neutral power layer), same low-friction/provenance discipline as the
+rest. Two things are specific to the board:
+
+- **Neutral kinds only.** Write the slug (`kingdom`, `hedging`,
+  `in-succession`), never a costume word — the vocabulary is projected on
+  the site (`data/labels.yaml`), not stored here. Actors are differentiated
+  by the **axes** (capitalization/optionality/gravity), not a rank ladder —
+  the ladder was removed 2026-07-25 (see `/classify` for the model).
+- **A change of kind is an EVENT, never silent** (§8.5). Moving an actor
+  state↔kingdom shows the change, logs it prominently to `coverage-log.md`,
+  and **offers to open a thread** for it. Don't apply a kind edit without
+  surfacing it. (A big axis re-estimate is worth the same treatment.)
+- The `held_by` pointer lives on the org (derive a House's holdings by
+  inversion); `depends_on` (the dependency stub — still written `liege`
+  until the rename lands) lives on the dependent. Never a `holds:`/`vassals:`
+  list on the other side.
+- For a *judgment* call (what kind? what posture? what's its axis profile?)
+  reach for `/classify` instead — it proposes and reasons. `/steer` board
+  verbs are for edits you've already decided.
+
+After any board edit, **republish**: `/publish --push` regenerates
+`data/board.json` so the `/map/` pages reflect it.
+
+## Global Capital verbs (`attention/capital-context.yaml`)
+
+- `/steer capital-context emphasize <thing>` → adds to `framing.emphasis[]`
+- `/steer capital-context deprioritize <thing>` → adds to `framing.deprioritize[]`
+- `/steer capital-context note: <freeform instruction>` → replaces
+  `framing.notes`
+
+**These touch `framing` ONLY** (Ben, 2026-07-30: "manual steer allowed to
+adjust the parameters by which the global context is built or framed") —
+`/steer` never hand-edits a `readings.*.value` directly. `framing` steers
+what the *next* refresh pass emphasizes or drops; the readings themselves
+are machine-derived from the data stack (Treasury TIC/BIS/IMF/EPFR/fund-
+flow reports) on their own weekly, `/week`-adjacent cadence (DESIGN.md
+Part 2 §11). If a reading is simply wrong (a bad pull, a stale figure),
+that's a data/collector bug — flag it plainly rather than silently
+overwriting the value through `/steer`.
+
+## Rules
+
+1. Parse the utterance into one or more concrete edits to
+   `attention/{watchlist.yaml,threads.yaml,upcoming.yaml,radar.md,board.yaml}`
+   (and, for thread/tag edits, the matching `artifacts/threads/<slug>.md` —
+   timeline corrections carry `⟨steer YYYY-MM-DD⟩`). Show anything
+   non-obvious (a drafted thread, a reworded question, a rank change)
+   before writing.
+2. Tag every edit `# ben-steer YYYY-MM-DD` (inline comment or notes line)
+   and append one line to `coverage-log.md` under today's date: what
+   changed and the words that caused it.
+3. **YAML guardrail:** after any edit, `yaml.safe_load` every touched YAML
+   file; on failure `git checkout --` the file and retry.
+4. Ambiguous utterance → ask one short question, don't guess a deletion.
+   Additions may be guessed liberally (EDGE-inclusive); deletions never.
+5. Commit with a `steer:` prefix message.
+
+These edits surface automatically in the next daily's 🔄 Map changes section.

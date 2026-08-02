@@ -1,0 +1,61 @@
+<!-- kit: registry/curate@{{kit_version}} — canonical: {{engine_path}}/library/skills/registry/curate/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+
+# /curate — candidates → records, with the operator, never without
+
+The registry loop's judgment half, and the skill that carries the UPL
+spine: **the agent drafts, the operator confirms, and no record change is
+asserted without a citation.** A record here is a claim about what the law
+requires of a practitioner — the entire product is that these claims carry
+receipts. A curate session that shortcuts this is worse than no session.
+
+## The loop
+
+Walk `candidates/*.yaml` with `status: staged`, oldest first. For each:
+
+1. **Read the source.** Open the candidate's `source.url`. Judge: does
+   this item actually change, add, or retire an obligation a record
+   tracks (or should track)? Most gazette items won't — rejection is the
+   common case and is fine.
+2. **Draft, don't assert.** For a real change, draft the record edit (new
+   record in `records/` or field changes to an existing one) and show the
+   operator: the field(s), old → new, the exact source quote that
+   supports it, and the proposed `status` (`enacted` vs `in-effect` —
+   first-class, never guessed; if the in-force date is unknown, say so
+   and use `enacted`).
+3. **Wait for the operator's word.** Accept / reject / defer is theirs.
+   No confirmation in-session → the candidate stays `staged`. Never
+   batch-accept.
+4. **On accept, the mechanics are mandatory, in order:**
+   - the record edit MUST carry `source_url` + `last_verified` (today) —
+     run the check, don't eyeball it:
+     `python3 -c "import sys; sys.path.insert(0,'{{engine_path}}/tools'); import record_diff as rd, yaml; print(rd.governance_check(yaml.safe_load(open('<record>')), ['source_url','last_verified']))"`
+     — a non-empty result blocks the accept, full stop.
+   - diff proposed vs committed with `record_diff.diff_records()` and
+     write one changelog entry per change via `write_changelog_entry()`
+     into `changelog/` (append-only; the writer refuses to modify an
+     existing file by construction).
+   - `yaml.safe_load` every file you wrote; a parse failure reverts the
+     write (kestrel discipline: safe-load-or-revert).
+5. **Resolve the candidate in place** — append to its YAML:
+   `status: accepted` + `record_id: <id>` + `resolved: <date>`, or
+   `status: rejected` + `reason: <one line>` (kept, not deleted — the
+   candidate trail is part of the audit record). `deferred` keeps
+   `staged` with a `note:`.
+
+## Confidence and honesty
+
+- A change you can't source to a primary document gets
+  `confidence: low` on the record and says so in the changelog entry —
+  or better, stays deferred until it can be sourced. Never launder a
+  secondary claim into a confident record.
+- `last_verified`-only bumps (re-verification with no substantive
+  change) do NOT emit per-field changelog entries — that's `/verify`'s
+  lane, recorded in its run note; the changelog stays a record of the
+  law moving, not of us looking.
+
+## Close
+
+Summarize: candidates walked / accepted / rejected / deferred, changelog
+entries emitted, records touched. Commit everything in this repo in one
+curate commit. The weekly changelog rollup IS the newsletter — a clean
+curate session is literally writing the product.

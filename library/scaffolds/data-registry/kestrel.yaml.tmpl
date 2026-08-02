@@ -1,0 +1,61 @@
+# kestrel.yaml — instance manifest (ROADMAP/DESIGN.md §2, ROADMAP/KITS.md §1).
+# Scaffolded by /instantiate-data (kind: registry). The `governance:` block
+# below is the mechanical rule set every registry instance shares (DESIGN.md
+# §2's worked example) — not a literal to this instance. `sources:` and
+# `cadence:` are this instance's own and start commented-out until curated;
+# `outputs:` likewise, until a sibling site exists (/instantiate-site).
+kind: registry
+name: {{instance_name}}
+contract_version: 1
+layout:
+  schema: schema/record.yaml
+  records: records/
+  changelog: changelog/
+  candidates: candidates/    # runner staging area — curation reads this
+  buffer: buffer/            # cache semantics, 30-day — gitignored, created
+                             # on demand, never committed
+  snapshots: snapshots/      # page-diff prior-snapshot store — NOT buffer
+                             # semantics: must outlive the sweep cadence,
+                             # never retention-swept
+  provenance: provenance/    # per-run fetch manifests, same shape
+
+# cadence:
+#   sweep:   # e.g. weekly — the product rhythm ("cadence IS the product")
+#   verify:  # e.g. quarterly — off-season re-verification pass
+
+# sources:
+#   # Extends the proven sources/sources.yaml per-source schema
+#   #   (name endpoint auth cadence recall perishability status notes)
+#   # with: tier · jurisdiction · method · collector · feed_url ·
+#   #        language · health
+#   - id: <source-id>
+#     name: <human-readable name>
+#     tier: 1
+#     jurisdiction: <slug>
+#     method: rss            # or page-diff, etc.
+#     collector: rss
+#     feed_url: <url>        # if method: rss
+#     endpoint: <url>        # if method: page-diff
+#     cadence: <per-source poll cadence>
+#     perishability: durable # or diffable
+#     status: proposed       # wired once actually collecting
+#     health: {last_probe: <date>, verdict: live}
+
+governance:                  # machine-checked by the runner, not habits —
+                              # the mechanical defaults every registry shares
+                              # (DESIGN.md §2's worked example)
+  record_change_requires: [source_url, last_verified]
+  field_diff_emits: changelog
+  yaml: safe-load-or-revert
+  feed_health: auto-demote   # 200-empty / years-stale → page-diff
+  tier3_verify_against: tier1
+
+# outputs:
+#   site: ../{{instance_name}}-site      # fill in once /instantiate-site
+#                                         # creates the sibling site repo
+#   adapter: {{instance_name}}           # this instance's tools/publish
+#                                         # adapter name (see /instantiate-site)
+#
+# Once a sibling site exists, register this instance in kestrel's own
+# instances.yaml ({path, kind, site}) — that registration is what lets
+# /install-kit and /sync-kits find and render this instance's kit.

@@ -1,0 +1,71 @@
+# CLAUDE.md — {{instance_name}}-data (instance #1)
+
+Ben's personal intelligence layer: **buffer + extract, never own the source
+data**. Four lenses ({{lens_set}}); the
+product is the attention map (`attention/` — watchlist entities, weighted
+threads, expectations ledger) and the thread-centric weekly read built from
+it (rendered page + daily digest archive; AGENTS.md disciplines 7–8).
+
+## The engine/instance split (2026-07-31)
+
+This repo is **instance #1** of the kestrel engine — the DATA (attention/,
+artifacts/, sources/, provenance/, templates/) plus the operating skills
+and docs. The CODE (collectors/, tools/) lives in `{{engine_path}}`,
+which tends this repo and `therapybulletin-data` both. `kestrel.yaml` at this
+root is the instance manifest.
+
+**Invocation rule:** any `tools/*.py` mentioned in the skills/docs means
+the ENGINE's tools, run as:
+
+    KESTREL_INSTANCE={{instance_path}} \
+      python3 {{engine_path}}/tools/<tool>.py
+
+Set `KESTREL_INSTANCE={{instance_path}}` for every engine tool
+invocation from this repo — without it the tools fall back to looking for
+instance data inside kestrel, where it no longer lives. Engine changes
+belong in kestrel (its `ROADMAP/DESIGN.md` is the split's design of
+record); this repo's history before 2026-07-31 lives in kestrel's git
+history (tag `pre-engine-split` and earlier).
+
+**Read first:** `AGENTS.md` (disciplines, operating rhythm, steering loop) →
+`README.md` (layout + contracts) → `STATUS.md` (where things stand) →
+`ROADMAP.md` (decisions + sequence, incl. the delivery surfaces) →
+`BOOTSTRAP.md` (build state, done-whens, gates) → `DESIGN.md` (the board as
+a node + claim graph — schema shapes + pipeline).
+
+**The commands:** `/start` · `/daily` · `/week` · `/steer` · `/crawl` ·
+`/map` · `/publish` · `/classify` (`.claude/skills/`). Templates in
+`templates/`.
+Zero coupling to sibling corpora — never read them; everything needed is
+distilled in `REBUILD-NOTES.md`.
+
+Never: canonicalize source data · edit `attention/` outside the steering
+loop (provenance tag every change) · let an LLM-edited YAML file go
+unvalidated (`yaml.safe_load` or revert).
+
+## Cite every metric — the source is the receipt (Ben, 2026-07-26)
+
+**Every claim on the board carries a cited source — above all the four
+measured axes (commanded_capital / thrust / gravity / optionality) and
+posture.** The value on the board is a *summary*;
+the source is the *receipt*, and Ben must be able to **see and click the
+justification for every claim**, especially the cap/opt/grav metrics.
+
+- **Where sources live:** a per-node bundle
+  `artifacts/bundles/<node-slug>-node/provenance.yaml`, shape:
+  `{ posture: {value, basis, sources[]}, capital: {available|operating|
+  deployed|in|out: {value, sources[]}}, optionality: {value, sources[]},
+  gravity: {value, sources[]} }` — each source is
+  `{figure, label, url, as_of, confidence}`. Capital is a **flow** (in ·
+  out · available · operating · deployed), not one static pile — fill what's
+  gettable, rough is fine.
+- **Discipline:** no cap/opt/grav or posture claim ships without at least
+  one source, or an explicit `confidence: low` / "estimate, uncited" flag.
+  WebFetch primary sources (SEC/EDGAR, IR, gov filings) + reputable trackers;
+  never fabricate a URL or figure — flag low-confidence instead.
+- **The publisher exports the bundle sources into `data/board.json`**, and
+  the `/map` node + pocket pages **render the justification inline and
+  clickable** under each metric. A metric with no visible source is a bug.
+- The board.yaml axis strings stay the one-line summary; the bundle is the
+  evidence layer behind them (same relationship as a thread → its `/crawl`
+  bundle).

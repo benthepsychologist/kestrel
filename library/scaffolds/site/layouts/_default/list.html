@@ -1,0 +1,16 @@
+{{ define "main" }}
+<div class="prose">
+  <h1>{{ .Title }}</h1>
+  {{ .Content }}
+</div>
+{{ if .Pages }}
+<div class="card-grid">
+  {{ range .Pages }}
+  <div class="card">
+    <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+    {{ with .Description }}<p>{{ . }}</p>{{ end }}
+  </div>
+  {{ end }}
+</div>
+{{ end }}
+{{ end }}

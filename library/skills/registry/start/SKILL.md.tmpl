@@ -1,0 +1,98 @@
+<!-- kit: registry/start@{{kit_version}} — canonical: {{engine_path}}/library/skills/registry/start/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+
+---
+name: start
+description: Session-bootstrap card for a registry instance — fuses the generic continuation ritual (docs, memory, git log) with the registry pipeline's live state (candidates by status, changelog/record counts, source health, provenance freshness, push safety across three repos). Read-only; run at the start of any session.
+---
+
+# /start — pick up the registry where it was left
+
+This is the registry-kind sibling of `common/start`, not that skill with a
+few lines swapped: an attention instance's session state lives in digests,
+expectations, and a flash rail; a registry instance's lives in
+`candidates/`, `records/`, `changelog/`, and per-source feed health — two
+different pipelines, so two different cards. The kit renderer resolves
+this file in place of `common/start` for any instance whose `kestrel.yaml`
+declares `kind: registry` (family `registry` renders after family
+`common`, same skill name, so it wins — KITS.md §2's selection rule, not a
+special case). It runs both a continuation pass and a pipeline-state pass
+and renders one card, in this order:
+
+1. **Continuation briefing** — read the canonical docs at repo root
+   (`CLAUDE.md`, `AGENTS.md`, `STATUS.md`, `README.md`, `ROADMAP.md`; say
+   plainly if one is missing rather than silently skipping it), then this
+   project's persistent memory directory (`MEMORY.md` + every file it
+   links, in full — standing preferences and prior feedback that won't
+   show up in the repo's own docs). Then `git log --oneline` since
+   STATUS.md's own "As of" date (or `-20`, whichever is more informative)
+   and `git status --short`. **No `log.md` read here** — the
+   session-close ledger is an attention-kind convention
+   (`AGENTS.md` §Session close on that family); the registry AGENTS.md
+   carries no equivalent, so don't go looking for one. Frame the
+   synthesis around continuation: what changed last, what's still open,
+   what's next — not a raw dump of any of these reads.
+2. **Candidate queue** — read `candidates/*.yaml` and tally by `status`
+   (`staged` / `accepted` / `rejected` / `deferred`). Report the `staged`
+   count as the headline number (that's the queue `/curate` will walk)
+   and name the oldest staged item's date — a staged candidate isn't
+   urgent the way a missed expectation is, but a queue that's been
+   sitting for multiple `/tend` cycles untouched is worth a line.
+3. **Corpus state** — count `records/` (excluding `.gitkeep`) and read
+   the newest few `changelog/*.yaml` entries (append-only, so newest
+   file mtime is newest law-change on record). Zero records is a normal,
+   reportable state pre-population (`README.md` should already say so —
+   flag it if the doc and the directory disagree). The changelog's
+   weekly rollup is the newsletter (`CLAUDE.md`'s framing) — its emptiness
+   or freshness is product state, not housekeeping.
+4. **Source health** — read `kestrel.yaml`'s `sources:` list. For each,
+   report `health.verdict` and how stale `health.last_probe` is. A
+   verdict other than `live` (e.g. `feed-empty`) is only a problem if the
+   manifest hasn't already adapted to it — check whether `method:` for
+   that source is already the demoted value (`page-diff` for a dead
+   feed) per `feed_health: auto-demote` in `governance:`; if the verdict
+   says broken but the method still says `rss`, that's a real gap to
+   flag, not the expected steady state.
+5. **Provenance + snapshot freshness** — newest file in `provenance/`
+   names the last `/tend` or `/verify` run and when; a `verify-*` run
+   note (once `/verify` has run at least once) separately from `collect-*`
+   `/tend` manifests. For any source on `method: page-diff`, the newest
+   `snapshots/*.meta.json` mtime is its last diffed-against baseline —
+   note if it looks older than that source's declared `cadence`.
+6. **Push safety** — run `git log @{u}..` in **all three** repos:
+   `{{instance_path}}` (this data repo), `{{engine_path}}` (the engine —
+   mechanical only, never auto-pushed), and `{{site_sibling}}` (the site
+   — currently editorial-only per the publish stub, so its own commits
+   are hand-authored, not pipeline output, but still worth the same
+   check). **A clean `git status` is not evidence of this** — only
+   `git log @{u}..` is. Any repo with unpushed commits is the headline
+   flag of the whole card, not a footnote at the bottom.
+7. **Doc drift check** — compare STATUS.md's own "As of" date and its top
+   note's claims against the commits since that date (already in hand
+   from step 1's git log). Flag anything the top note asserts that the
+   newest commits have already overtaken; fix nothing — just name the
+   drift.
+8. **Name the obvious next move** — one plain line, e.g. "9 candidates
+   staged, nothing curated yet — run `/curate`" or "queue's empty and
+   sources are live, good window for manifest work" — don't leave it for
+   the reader to infer from the briefing above it.
+
+## Rules
+
+1. **Read-only, always.** `/start` never edits `candidates/`, `records/`,
+   `changelog/`, or `kestrel.yaml`, never writes an artifact, never
+   commits, never publishes. It only reads: repo-root docs, the memory
+   directory, git (log/status, all three repos), `candidates/*.yaml`,
+   `records/`, `changelog/*.yaml`, `kestrel.yaml`, `provenance/`, and
+   `snapshots/`.
+2. **Reuse, don't duplicate.** Where `/tend`, `/curate`, or `/verify`
+   already specifies how to read a file or compute a state (candidate
+   resolution states, the feed-health demotion rule, what counts as a
+   changelog entry), point at that command's section instead of writing
+   a second recipe that can drift out of sync with it.
+3. Formatting follows the same house style as every other skill card:
+   one-line verdict up top, bullets with bold lead terms, a table wherever
+   facts enumerate cleanly (candidate counts by status, source health by
+   source), status emojis as anchors, a horizontal rule between the major
+   sections above.
+4. If nothing is wrong anywhere in the card, say that plainly — a clean
+   `/start` is a real, useful finding, not a step to pad out.

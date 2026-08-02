@@ -1,0 +1,34 @@
+<!-- kit: registry/tend@{{kit_version}} — canonical: {{engine_path}}/library/skills/registry/tend/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+
+# /tend — sweep the sources, stage the candidates
+
+The registry loop's mechanical half. Runs the engine's manifest-driven
+runner against this instance, then reports what it staged — **it never
+writes a record** (the runner STOPs at candidates by design; kestrel
+DESIGN §5's UPL discipline is structural, not a habit).
+
+## Run
+
+    python3 {{engine_path}}/tools/tend.py {{instance_path}}
+
+`--dry-run` first if you want the source-selection plan without fetches.
+`--source <id>` scopes to one source.
+
+## Then report, scannable
+
+- **Per-source verdicts** — the runner prints them; relay the ones that
+  matter: `changed` page-diffs, feeds that failed, anything `UNHANDLED`.
+- **Candidates staged** — count + one line each (new files in
+  `candidates/`). Zero staged on a quiet week is a normal, correct
+  outcome — say so plainly rather than padding.
+- **Feed health** — a source whose feed lied (200-but-empty, years-stale)
+  is registry data: flag it for a `method: page-diff` demotion in
+  `kestrel.yaml`'s `sources:` (the governance rule is `feed_health:
+  auto-demote`; the manifest edit itself is a curation act — propose it,
+  don't silently rewrite the manifest mid-run).
+
+## Close
+
+Commit the run's artifacts in THIS repo (buffer is gitignored; candidates,
+provenance, and snapshots are not): one commit, provenance manifests
+included. If candidates were staged, say that `/curate` is the next move.

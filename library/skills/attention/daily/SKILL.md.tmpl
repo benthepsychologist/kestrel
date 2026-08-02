@@ -1,0 +1,246 @@
+<!-- kit: attention/daily@{{kit_version}} — canonical: {{engine_path}}/library/skills/attention/daily/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+
+---
+name: daily
+description: Produce/refresh today's intelligence read — finalize yesterday, check the expectations ledger, collect, curate + tag all three lenses, write thread timelines, render + republish the weekly page, then take Ben's steering.
+---
+
+# /daily — catch up to now
+
+The core loop turn. **Run ANY time, as often as wanted** (Ben, 2026-07-28:
+"the times on the clock are arbitrary — /daily just updates us to
+current"). A run brings the record up to the present: reconstruct any
+missed days, finalize every day that's finalizable, open/extend the
+current day. Re-runs rebuild in place; there is no scheduled hour and no
+market-close ritual.
+
+Two invariants survive the de-scheduling (they're about data, not clocks):
+- **The 5am-ET digest-day boundary stays** — it buckets items into days
+  for the archive; it never dictates when you run.
+- **A day finalizes only when its coverage is checkable** — the critic's
+  benchmark publications appear mid-morning, so a day flips to
+  `final/coverage: done` only once the run happens ≥ ~5h after that day
+  closed. A too-fresh day stays `building/coverage: pending` and the next
+  run (whenever it is) finishes it. This is the old "after 10:00 ET" rule
+  relocated from run-gate to per-day condition — recall is preserved
+  without gating the operator.
+
+**Digest-day = 5am ET → 5am ET** (DST-aware, zoneinfo). **Week = the 7
+digest-days Mon…Sun** (fixed, regardless of when `/week` runs). States live
+in each digest's frontmatter: `status: building|final`,
+`coverage: na|pending|done` — the state machine is what makes
+run-anytime safe: every day's standing is in its own frontmatter, so a
+run just advances whatever is advanceable.
+
+**The frame (Ben, 2026-07-22):** the product is a rolling weekly report —
+"what's happening this week + what changed today" — built from threads and
+entities, not a daily in a vacuum. The per-day digests remain the canonical
+archive; the page is derived from them.
+
+## Steps
+
+1. **Finalize yesterday — and EVERY missed day since the last run** (Ben,
+   2026-07-27: "a week shouldn't be worse because a Thursday or Friday run
+   didn't happen"). If digest-days are missing between the last daily and
+   yesterday (weekends included — the 07-20 week's four biggest stories all
+   broke Fri-night→Sun with no daily running), reconstruct each gap day:
+   a per-day sweep of its window, a digest marked *reconstructed* in its
+   *Curated from* line, timeline entries with that day's `⟨daily <date>⟩`
+   markers. Then finalize as normal (if `building` or `coverage: pending`):
+   re-collect the precise final window, re-curate as the definitive
+   day-in-review, run the **coverage critic** vs. `sources/benchmarks.yaml`
+   — appendix + `coverage-log.md` entry + guardrail-protected
+   watchlist/thread auto-adds. Fold late/critic-caught items into
+   yesterday's timeline blocks (`⟨daily <yesterday>⟩` markers) with
+   `<!-- k: -->` annotations. A **Sunday-evening mini-sweep** (a light
+   collect-only pass, no full curation) is sanctioned any weekend to cut
+   the Monday reconstruction load.
+2. **Upcoming check** (before collect, so the sweep can target due claims) —
+   read `attention/upcoming.yaml`; for every `pending` entry with
+   `due <= today` (plus `passed-silent` within its 3-day grace), sweep for
+   confirming/slipping evidence. Flip statuses: evidence → `hit` · new date
+   → `slipped` (old date onto `slips:`, back to `pending`) · neither →
+   `passed-silent` (**the loud outcome**). Every flip is a line in the
+   digest's ⏳ section.
+3. **Collect today-so-far** — full sweep: feeds + query sweep over
+   `attention/watchlist.yaml` terms and open `attention/threads.yaml`
+   terms, per lens. Buffer results (30-day retention) with
+   `threads`/`entities` slug arrays; write per-run provenance manifests.
+4. **Curate + tag** — one digest per lens into `artifacts/digests/daily/`,
+   against `templates/daily-digest.md`. Rubric unchanged (frame-neutral ·
+   signal over noise · watchlist priority · de-dupe vs. prior digest · drop
+   Reddit/PR-newswire · trim GDELT finance-bleed/arXiv · empty input stated
+   plainly), plus six duties — the sixth is **global-capital only**, not a
+   rewrite of the shared five (DESIGN.md Part 2 §8):
+   - **annotate every bullet** with `<!-- k: t=… e=… axis=… -->` (entity
+     slugs only from the watchlist — a new entity = a map add first; 0–3
+     threads per item);
+   - **mark magnitude with `sev=`** on the annotation where it applies
+     (`sev=major`, rarely `sev=flash`) — this is the M term in the
+     salience score (AGENTS discipline 10). **The default is no `sev=` at
+     all.** `major` is for a development that genuinely resets a thread —
+     a resolution, a reversal, a first-of-its-kind — not for the day's
+     best story, which the throughline already carries. If more than
+     roughly one item a day is getting `sev=`, the bar has drifted and
+     the term stops discriminating.
+   - **rebuild today's timeline block** at the top of
+     `artifacts/threads/<slug>.md` for each thread with a real development
+     (per `templates/thread-timeline.md`; ambient matches only update
+     `last_seen`);
+   - **log new dated expectations** into `upcoming.yaml`
+     (`logged_by: curate-add`).
+   - **ask once whether the day warrants a FLASH** — `attention/flash.yaml`,
+     the rail that publishes on every page of the site. The test is NOT
+     "is this our biggest story" (the executive summary carries that); it
+     is **"would this lead a general news front page — 9/11, an invasion,
+     a market-halting crash — whether or not it touches our lenses?"**
+     (Ben, 2026-07-29). **`critical` only reaches the rail; normally at
+     most one is active**, two is exceptional. Same primary-source
+     discipline as everything else — a wrong flash is worse than a late
+     one, and an unverified one says so on its face. Set `expires` (a few
+     days); `/week` prunes. **Most days have no flash, and writing none
+     is the correct outcome** — the rail is worthless if it fires often.
+   - **write the cross-lens executive summary** to
+     `artifacts/digests/daily/<date>-front.md` — a `## Today's throughline`
+     section in the digests' **neutral register** (not first person),
+     saying what the day amounted to across all three lenses. It is
+     parsed for that section only. Stage 1 of the summary ladder: bullets
+     are deliberately not hand-written, because deriving them from the
+     salience ranking is stage 2 (ROADMAP §Salience).
+   - **global-capital only: attach an `interpretation` where a real
+     mechanism is identifiable** — never forced onto every bullet to pad a
+     thin day (Ben, 2026-07-30: "it's not just aggregating news items,
+     it's reviewing them through this lens and offering possible
+     interpretations"). Read `attention/capital-context.yaml` (the
+     standing snapshot) first — the interpretation answers "how does this
+     interact with the current picture," not "what do I think from
+     nothing." Shape: `{mechanism, confidence, scenarios[{direction, why,
+     precedent?}], context_note}` — `tools/readouts.py`'s
+     `validate_interpretation()` enforces it, same discipline as every
+     other shape here: above `speculative` confidence, at least one
+     scenario needs a real precedent or the whole thing is rejected, not
+     waved through. Write it to the sidecar
+     `artifacts/digests/daily/<date>-global-capital.interp.yaml`, keyed by
+     `slugify()` of the bullet's own **bold lead phrase** (its own
+     dedicated key namespace — NOT the item `id` field, which is
+     URL-based when a source link exists and only falls back to a text
+     slug otherwise; the interpretation key is always the bold-phrase
+     slug, unconditionally, so it stays stable regardless of whether the
+     bullet carries a link), and mark the bullet's `<!-- k: ... -->`
+     annotation with `interp=yes` so the renderer knows to look it up.
+     Full spec: DESIGN.md Part 2.
+5. **Map deltas + thread candidates** — the digest's 🔄 Map changes section
+   (every edit since the last daily, provenance-tagged) + **1–3 thread
+   candidates** ("track this?"; unanswered candidates reappear once, then
+   drop). Two pools feed the same 1–3 slots, not additive on top of them
+   (World News stays restrained — "on the radar, not drowning out my real
+   targets," ROADMAP §World News):
+   - **curator-noticed** — a story surfaced during collect/curate that
+     isn't mechanically scored, judgment-picked as usual.
+   - **`attention/world-news.yaml`'s `candidate`-status items** (built by
+     `tools/build_world_news.py`, wiring GDELT + google_news_rss) — these
+     already cleared a real outlet/domain-count bar and failed to match
+     any existing thread, so they're pre-qualified, not raw noise. Offer
+     the highest-`distinct_outlets` ones first; tag the line
+     `(world-news, N outlets)` per the template's `(source)` convention so
+     it reads as mechanically-scored, not a curator guess. Check
+     yesterday's digest's own Thread candidates section first — if the
+     same story was already offered and Ben didn't act on it, don't
+     re-offer it a second time (the file regenerates fresh each run, so
+     "already offered" isn't tracked in the YAML itself, only in the
+     digest archive). A candidate Ben promotes becomes a real thread the
+     normal way (`ben-steer`, `/steer`); once that thread's terms/watch
+     text exist, the next `build_world_news.py` run matches the same
+     story to it automatically and it drops out of the candidate pool on
+     its own — no extra bookkeeping needed.
+5b. **Refresh the standing synthesis** — for any board actor that *moved*
+   today (a new/updated thread, a posture/rank change), re-write its
+   `attention/actor-doing.yaml` "what are they doing now" roll-up and bump
+   `asof`. Light touch — only the actors that moved; `/week` does the full
+   pass. (The synthesis shows atop each `/map/<slug>/` page.)
+6. **Render + publish** — run `tools/render_read.py` (assembles the payload
+   from attention/ + this week's digests + timelines and substitutes into
+   `templates/read-shell.html` → `artifacts/read/index.html`; the agent
+   never writes page HTML/JS), then **republish to the stable artifact URL
+   in ROADMAP.md §Delivery**. Heed the size warning (>600 KB → degradation
+   rule in the shell header). Always also present the read in the terminal.
+   (Drive comment loop: gated, not built — ROADMAP §Delivery.)
+6a. **Refresh the public site's briefings** (Ben, 2026-07-30: they'd gone
+    stale mid-day and one had gone missing after a lens rename — "it
+    should be additive... have it update in place whenever new things
+    show up"). `tools/readouts.py --scan` covers 165 scopes (front + 3
+    lenses + every thread/entity/node), but only **front + the 3 lens
+    scopes carry the fuller briefing** (`briefing_scope()`) and only
+    those render on the public site's front/beat pages — that's the
+    routine part of every `/daily` run:
+    `--pack front`, `--pack lens:ai`, `--pack lens:global-capital`,
+    `--pack lens:mental-health`, one sonnet-class agent per pack (they
+    run independently — dispatch in parallel), each returning
+    `{gist, lead, sections, watch}` per the pack's own embedded `shape`
+    field. Assemble the four into one `{scope: {briefing: {...}}}` JSON
+    and run `--apply` — it validates (including the `LINK_FLOOR`: ≥60%
+    of bullets need a real url once ≥3 are on offer; add `/threads/
+    <slug>/` links rather than leaving bullets unlinked) and rejects
+    anything malformed rather than storing it. Then `--export` (also
+    mechanically drops any scope key orphaned by a rename — e.g.
+    `lens:money` after the Global Capital rename — so a renamed lens
+    never sits invisible under its old key). `/publish --push` ships the
+    refreshed store to the site (`data/readouts.json`). The other ~150
+    thread/entity/node summary scopes are a separate, larger backlog —
+    not part of this routine step; refresh those only when asked.
+7. **Take steering** — Ben's reactions ("track X", "drop Y", "deeper on Z",
+   "expect C by D") apply immediately as `ben-steer` edits (see `/steer`).
+   End by stating what changed in the map today.
+8. **Close the session** — AGENTS.md §Session close: append to `log.md`,
+   then **commit and PUSH kestrel** (`git push origin master`), including
+   this run's provenance manifests. `/publish --push` pushes the SITE, not
+   this repo — nothing else does, so a run that skips this leaves work
+   sitting local and looking fine. Check `git log @{u}..` before calling
+   it done.
+
+## Interim mode — the dispatch plan (Ben, 2026-07-28: "dispatch a bunch
+## of agents… otherwise updates take forever with all these threads")
+
+Until `collectors/` land (BOOTSTRAP §Building), collection is agentic —
+and at 50+ threads it is TIERED, fired as ONE parallel batch at run
+start, curated by this session as reports land. News arrives by STORY;
+threads consume by ROUTING — so never dispatch per-thread (the same
+story would be fetched 58 times). Three tiers:
+
+1. **Lens sweeps — COLLECTORS FIRST (2026-07-28: collectors/ is real):**
+   run `KESTREL_INSTANCE={{instance_path}} python3 {{engine_path}}/tools/collect.py` (all lenses, since last run) BEFORE any
+   agent — 7 deterministic sources (google_news_rss, rss, gdelt,
+   sec_edgar, federal_register, openalex, clinicaltrials) fill buffer/ +
+   provenance in minutes, free. Then AT MOST 1-2 sonnet agents to cover
+   what collectors can't (paywalled bodies, follow-up questions) — not
+   broad sweeps. Curation routes buffered items to 0-3 threads.
+2. **Hot-cluster deep checks (2-4 agents):** threads that are (a) DUE
+   today per `upcoming.yaml`, (b) weight-3, or (c) moved in the last
+   48h — grouped into clusters by meta-parent + entity family (the capex
+   tree · the financing loop · grok/musk · china stack · memory · the
+   payer bloc · …), 5-8 threads per agent. Depth goes where the map says
+   it's needed today.
+3. **Cold rotation (1 agent):** the quiet tail on a 7-day rotation —
+   ~1/7th of cold threads per run get a targeted term-sweep, so every
+   thread is touched at least weekly at near-zero daily cost. `/week`'s
+   decay review audits what the rotation missed.
+
+Operating rules (distilled from real failures, 07-27/28):
+- **WebSearch budget is reserved for tier 2.** Tiers 1 and 3 run
+  RSS/WebFetch-first (Google News RSS is reliable for headline+date).
+- **Date-of-event claims need a primary-source check before a timeline
+  entry** — aggregation re-indexes masquerade as fresh news (the
+  SpaceX-misdate + apple-gemini false-positive lessons).
+- **Write scopes are disjoint:** an agent may write ONLY its assigned
+  threads' timeline files + its own finding/bundle. `threads.yaml`,
+  `upcoming.yaml`, `actor-doing.yaml` are main-session-only — agents
+  PROPOSE updates in their reports.
+- **Tier-1/tier-2 overlap is a feature, not waste** — cross-sweep
+  contradiction is the error detector (it caught the SpaceX date).
+- Scale check: ~6-9 agents per run, growing with CLUSTER count, not
+  thread count.
+
+Curated by this session against the same templates. Same contract as the
+future pipeline — say "agentic-interim" in the digest's *Curated from*
+line. `tools/render_read.py` is real (built 2026-07-22) — always use it
+for step 6; never hand-assemble the page.

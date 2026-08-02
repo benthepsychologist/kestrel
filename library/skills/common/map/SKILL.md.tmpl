@@ -1,0 +1,29 @@
+<!-- kit: common/map@{{kit_version}} — canonical: {{engine_path}}/library/skills/common/map/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+
+---
+name: map
+description: Read-only status card of the attention map and pipeline — lenses, thread freshness, radar modes, last digest, open gates. Safe any time.
+---
+
+# /map — where the watching stands
+
+Read-only; run any number of times. Renders one compact card:
+
+- **Lenses** — per lens: orgs / people / themes counts (from
+  `attention/watchlist.yaml`), release-watch + conditions where present.
+- **Threads by freshness** — 🟢 fresh (`last_seen` ≤ 3d) · 🟡 aging (≤ 10d) ·
+  🔴 stale (> 10d — will hit the next `/week` decay review); resolved count.
+- **Board** (`attention/board.yaml`) — actor counts by kind (states /
+  kingdoms; the `regulator`/`route-layer` stubs), Houses count, any org
+  still carrying a `# provisional` posture (a `/classify postures`
+  candidate), and the most recent kind change if any. (Actors differ by the
+  capitalization/optionality/gravity axes, not a rank ladder — 2026-07-25.)
+- **Radar** — each question: mode (answer/monitor/both) + one-line state;
+  flag questions with no working notes in 30+ days.
+- **Pipeline** — last daily per lens (date + building/final + coverage
+  state), last weekly, last delivery/feedback pull.
+- **Gates & flags** — anything ⛔ in BOOTSTRAP.md, sources with `at-risk`
+  status in `sources/sources.yaml`.
+
+No writes, no network needed (state is all on disk). End with the single
+most useful next action (e.g. "yesterday never finalized — run /daily").

@@ -1,0 +1,31 @@
+# ============================================================
+# DRAFT — record schema stub, scaffolded by /instantiate-data
+# ============================================================
+#
+# Marked DRAFT deliberately (ROADMAP/KITS.md §5, distilled from a proven
+# registry instance's own schema stub). A registry instance's record shape
+# is this instance's own domain modeling — do not finalize this file until
+# the instance's own research/spec work has actually happened. The engine
+# never interprets record fields directly; only the diff engine's generic
+# field-change semantics touch them (ROADMAP/DESIGN.md §4).
+#
+# The two fields below are NOT optional — `governance.record_change_requires`
+# in kestrel.yaml names them, and curation is mechanically refused without
+# them (KITS.md §4, the UPL discipline). Everything else here is a
+# convention seen across registry instances, not a finished schema — add,
+# rename, or drop fields freely once this instance's own domain is known.
+# ============================================================
+
+record:
+  # --- this instance's own domain fields go here ---
+
+  # --- mechanically required (governance.record_change_requires) ---
+  source_url:    # the source this record was derived from
+  last_verified: # when this record was last verified against source
+
+  # --- conventional across registry instances, not mechanically enforced ---
+  status:        # e.g. an enacted-vs-in-effect distinction, if this
+                 # instance's domain has one (DESIGN.md §4) — a compound
+                 # field; not broken into a sub-schema here
+  confidence:    # confidence in this record's accuracy
+  notes:         # free-text notes

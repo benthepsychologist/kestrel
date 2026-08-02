@@ -1,0 +1,24 @@
+# instances.yaml — the instance + site registry (ROADMAP/KITS.md §3): what
+# `tools/kit.py sync` sweeps, and where `render`/`install` pull the
+# path/site/render values a target's own kestrel.yaml can't supply
+# (site_sibling, and any extra render tokens like lens_set — KITS.md §1).
+#
+# Subsumes the sites registry the publish design wanted (ROADMAP/DESIGN.md
+# §6) — one registry, not two: each entry's `site:` is ITSELF a sync
+# target (the `site` agentdocs kit only — no skills, no manifest of its
+# own; it's identified by this backref, not a separate top-level entry —
+# see tools/kit.py's `find_site_backref()`).
+#
+# Paths are absolute, matching the `outputs.site:` convention already used
+# in theprojection-data/kestrel.yaml and therapybulletin-data/kestrel.yaml.
+# Relative paths are also accepted (resolved against this file's own
+# directory) — useful for a fixture registry in tests (kit.py --instances).
+instances:
+  - path: /workspace/theprojection-data
+    kind: attention
+    site: /workspace/theprojection-site
+    render:
+      lens_set: "ai · global-capital · mental-health · world-news"
+  - path: /workspace/therapybulletin-data
+    kind: registry
+    site: /workspace/therapybulletin-site

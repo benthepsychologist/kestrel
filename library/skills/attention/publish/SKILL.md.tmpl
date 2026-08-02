@@ -1,0 +1,95 @@
+<!-- kit: attention/publish@{{kit_version}} — canonical: {{engine_path}}/library/skills/attention/publish/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+
+---
+name: publish
+description: Push the attention map's public-flagged threads to {{instance_name}}.org — stages by default, --push to go live.
+argument-hint: [--push] [--dry-run]
+---
+
+# /publish [--push] [--dry-run] — export to {{instance_name}}.org
+
+Runs `KESTREL_INSTANCE={{instance_path}} python3 {{engine_path}}/tools/publish.py`
+(AGENTS.md discipline 9) — the generic engine CLI, which loads this repo's
+own `publish/adapter.py` (declared in `kestrel.yaml`'s `outputs.adapter`).
+Kestrel feeds the site; never the reverse, and no other path writes there.
+
+**Not part of `/daily`** — this is a separate, deliberate step. `/daily`
+only renders + republishes the private artifact page; nothing pushes to
+the public site unless this command (or the script directly) runs.
+
+## What it does
+
+Every thread in `attention/threads.yaml` publishes unless flagged
+`public: false` (an escape hatch, not a gate — see AGENTS.md disc. 9). For
+each publishable thread: strips the internal header off its timeline
+artifact, keeps only the hardcoded field allowlist (never `notes`, never
+`terms`), and secret-scans the result. Also assembles this week's
+throughlines/items/map-changes/upcoming-expectations into the site's
+weekly payload, entity stub pages for everything actually referenced. A
+zero-publishable-threads run is a no-op — it never wipes the live site.
+
+## Modes
+
+- **`/publish`** (default) — stages `content/threads/*.md`,
+  `content/entities/*.md`, `data/payload.json` into the site repo's
+  working tree. No commit, no push, no deploy. Good for reviewing a diff
+  before it goes live.
+- **`/publish --push`** — stages, then commits + pushes the site repo and
+  fires the Cloudflare Workers Builds deploy hook. {{instance_name}}.org
+  updates for real, immediately. **No confirmation needed** (Ben,
+  2026-07-23: "there's no editorial here, pushing to live is basically
+  costless — it's the primary read surface") — the safety already lives in
+  the mechanical backstops below (secret-scan, field allowlist, the
+  `public: false` escape hatch), not in asking before every push. Treat
+  `--push` as the normal path.
+- **`/publish --dry-run`** — reports what would publish (thread list +
+  payload counts) without writing anything, staged or otherwise.
+
+## Staleness check (added 2026-07-23, Ben: fold this into routine `/publish` work)
+
+Before (or as part of) every `/publish` run, a **quick** fact-check —
+bounded, not a full docs-sync pass:
+
+1. **kestrel's own command lists** (`README.md`'s working-day block +
+   layout table, `AGENTS.md`'s operating-rhythm table) list every skill
+   actually in `.claude/skills/` — nothing added/renamed there silently.
+2. **{{instance_name}}'s public-facing claims about itself** — `content/about.md`
+   and the site repo's own `README.md` — match how publishing actually
+   works right now (AGENTS.md discipline 9: default-on, not hand-gated;
+   `public: false` is an escape hatch, not an editorial review step). This
+   is the drift that actually happened 2026-07-23: both files still said
+   "reviewed by hand before publication," stale since the 07-22
+   default-publish decision.
+3. **kestrel's `STATUS.md`** "As of" line and the public-site status note
+   reflect whether the site is actually live with real threads (not still
+   describing an earlier scaffold/pre-launch state).
+
+Fix drift inline (small, mechanical edits — not a rewrite) and report what
+was corrected, if anything. Genuinely first-person content on the public
+site (e.g. `about.md`'s "How I use it") gets drafted, not asserted —
+flag it for Ben's read-through rather than treating it as finished. If
+nothing's stale, say so plainly — that's a real, useful finding too, not
+a step to skip silently.
+
+## Rules
+
+1. `--push` is the normal mode, not a special-caution one — don't ask
+   before running it. If the ask is genuinely ambiguous about which mode
+   (rare — usually "publish" means `--push`), default to `--push` rather
+   than the more conservative stage-only.
+2. A secret-scan hit on any single thread skips that thread (logged, not
+   silently dropped); a hit on the *assembled weekly payload* aborts the
+   entire run rather than publishing a partial, unscanned batch.
+3. Report what ran: threads published, threads skipped (+ why), payload
+   counts, and — if `--push` — the commit range and the Cloudflare
+   build_uuid from the deploy-hook response.
+4. `THEPROJECTION_SITE_DIR` env var (or `--site-dir`) overrides the
+   default site checkout path if it ever moves — set in **this repo's own
+   `.env`**, not kestrel's (the adapter is instance-owned, revised
+   2026-07-31).
+5. **The deploy hook only fires automatically inside `tools/publish.py --push`,**
+   and only if `THEPROJECTION_DEPLOY_HOOK` is set — there's no fallback.
+   Any *other* push to the site repo (a template/CSS/JS/code change, not a
+   content publish) does **not** auto-trigger a Cloudflare build — fire it
+   by hand: `curl -X POST "$THEPROJECTION_DEPLOY_HOOK"`. Learned
+   2026-07-23 doing the mobile-fix and copy-chat-feature pushes directly.

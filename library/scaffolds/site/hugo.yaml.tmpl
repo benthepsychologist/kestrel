@@ -1,0 +1,46 @@
+title: "{{instance_name}}"
+baseURL: "https://example.invalid/"   # placeholder — set the real domain
+                                       # before deploy; DNS/domains are Ben's
+languageCode: "en-us"
+copyright: "{{instance_name}}"
+
+# Self-contained by design: no analytics, no external fonts or CDN
+# dependencies at runtime. Fonts are a brand asset, chosen per-site later
+# (see this repo's README) — none are bundled by this scaffold.
+googleAnalytics: ""
+enableRobotsTXT: true
+
+# Taxonomies stay off until this instance's content actually needs them;
+# RSS and sitemap are on by default (Hugo's own defaults).
+disableKinds:
+  - taxonomy
+  - term
+
+params:
+  description: >-
+    One-line description of {{instance_name}}, for meta tags and feeds.
+    Replace before launch.
+  tagline: ""
+
+menus:
+  main: []
+    # - name: Section
+    #   url: /section/
+    #   weight: 10
+
+privacy:
+  disqus:
+    disable: true
+  googleAnalytics:
+    disable: true
+  instagram:
+    disable: true
+  twitter:
+    disable: true
+  vimeo:
+    disable: true
+  youtube:
+    disable: true
+
+build:
+  writeStats: false

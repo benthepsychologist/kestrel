@@ -1,0 +1,30 @@
+<!-- kit: registry/publish@{{kit_version}} — canonical: {{engine_path}}/library/skills/registry/publish/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+
+# /publish — STUB, gated on the {{instance_name}} adapter
+
+**This skill is not operational yet, and says so rather than pretending.**
+
+Publishing this registry to {{site_sibling}} requires a
+`publish/adapter.py` in **this repo** (`{{instance_path}}/publish/`,
+declared via this repo's own `kestrel.yaml` `outputs.adapter` — adapters
+are instance-owned, not engine code, revised 2026-07-31) — the component
+that turns `records/` + `changelog/` into the site's matrix pages,
+changelog page, and data JSON, under `{{engine_path}}/tools/publish/core.py`'s
+guarantees (secret scan, field allowlists, no-empty-wipe). Per kestrel
+`ROADMAP/DESIGN.md` §6, that adapter is designed but **not built**.
+
+Until it exists:
+
+- The site ({{site_sibling}}) is editorial-only — its content is
+  hand-authored site code, not generated registry exports.
+- Do NOT hand-write "generated-looking" registry content into the site
+  repo to bridge the gap — that breaks the single-content-writer
+  invariant the eventual adapter depends on, and creates pages the
+  adapter would later fight.
+- When the adapter lands, this stub is replaced via `/sync-kits` with
+  the real skill (run staged, review the diff, `--push` deploys — every
+  push to the site's main is a production deploy).
+
+If you were asked to publish and reached this stub: report the gate
+plainly and point at the adapter (in **this** repo, not kestrel) as the
+next work item.

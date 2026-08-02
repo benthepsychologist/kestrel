@@ -1,0 +1,29 @@
+# {{instance_name}}-data
+
+An **attention** instance tended by the kestrel engine: a watchlist +
+weighted-thread attention map, and the artifacts derived from it (daily and
+weekly digests, timelines, bundles). This repo is the data; a paired site
+repo (once created via `/instantiate-site`) is the published surface; the
+engine is the machinery. `kestrel.yaml` at this root is the instance
+manifest (`kind: attention`).
+
+Scaffolded by kestrel's `/instantiate-data` meta-skill (ROADMAP/KITS.md
+§3/§5) from `library/scaffolds/data-attention/`. Next steps, in order:
+
+1. Decide this instance's own lens set (channel labels for threads/digests)
+   and record it as this entry's `render: {lens_set: "..."}` in kestrel's
+   `instances.yaml` — not set here.
+2. Populate `sources/` (`sources.yaml`, `feeds.yaml`, `benchmarks.yaml` —
+   the directory is scaffolded empty).
+3. Run the engine's kit installer against this repo to bring in this
+   instance's operating skills (`/daily`, `/steer`, `/crawl`, `/classify`,
+   `/week`, `/publish`, plus the common `/start`/`/map`) and agent docs
+   (`/instantiate-data`'s last step does this automatically; re-run it
+   later via `/install-kit` after any library update).
+4. Confirm this instance is registered in kestrel's own `instances.yaml`
+   (the session running `/instantiate-data` shows the exact block to add
+   and appends/commits it separately, in kestrel).
+
+**Never:** canonicalize source data · edit `attention/` outside the
+steering loop (provenance-tag every change) · let an LLM-edited YAML file
+go unvalidated (`yaml.safe_load` or revert).

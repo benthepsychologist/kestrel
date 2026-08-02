@@ -1,0 +1,42 @@
+<!-- kit: registry/verify@{{kit_version}} — canonical: {{engine_path}}/library/skills/registry/verify/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+
+# /verify — the re-verification pass
+
+The off-season half of the cadence (`cadence.verify:` in `kestrel.yaml`,
+quarterly by default). The failure mode for a compliance resource is not
+wrong content — it is **silently old content**. This pass is the
+mechanical answer: every claim gets re-checked against its primary source
+on a schedule, and a verified non-change is recorded as information.
+
+## The pass
+
+1. **Select** — every record in `records/` whose `last_verified` is older
+   than the verify cadence, worst first. Report the count before starting;
+   if the tail is long, say how much this session will cover rather than
+   silently sampling.
+2. **Re-check each against its own `source_url`** (and the current
+   primary source if the URL has rotted — a dead source link is itself a
+   finding: fix the link as a field change through the normal `/curate`
+   mechanics, citation and all).
+   - **Unchanged** → bump `last_verified` to today on the record. No
+     per-field changelog entry (the changelog records the law moving,
+     not us looking) — the sweep's run note carries the tally.
+   - **Changed** → do NOT edit inline as part of verification. Stage it:
+     write a candidate into `candidates/` (source, quote, what moved)
+     and run it through `/curate` with the operator — a verify pass that
+     quietly rewrites records is `/curate` without the operator, which
+     is the thing this kit exists to prevent.
+3. **Feed health re-probe** — for each source in the manifest, does its
+   feed/page still behave as its `health:` verdict claims? Stale
+   verdicts get proposed updates (manifest edits are curation acts —
+   propose, don't silently rewrite).
+4. **Run note** — append one dated entry to `provenance/` (same shape as
+   a collect manifest): records checked, unchanged count, staged-changed
+   count, link-rot findings, feed-health proposals.
+
+## Close
+
+Commit the pass in one commit: bumped records, any staged candidates, the
+run note. Report the tally plainly — "N checked, all unchanged" is a
+strong, publishable result, not a boring one; it is exactly the claim the
+site's per-page `last verified` stamps are made of.

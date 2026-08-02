@@ -1,0 +1,78 @@
+/* {{instance_name}} — brand-tokens stub, distilled from a proven site's
+   design-system pattern (ROADMAP/KITS.md §5). Nothing below commits to a
+   look: fill in the custom properties with this instance's own brand
+   palette and type system once one is chosen. Bare/semantic defaults are
+   supplied so the scaffold builds clean before that choice is made. */
+
+:root {
+  /* --bg: ; */
+  /* --surface: ; */
+  /* --ink: ; */
+  /* --ink-soft: ; */
+  /* --accent: ; */
+  /* --accent-2: ; */
+  /* --hairline: ; */
+  /* --serif: ; */
+  /* --sans: ; */
+  --measure: 44rem;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  line-height: 1.6;
+}
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  padding: 0.5rem 1rem;
+  z-index: 10;
+  background: #000;
+  color: #fff;
+}
+.skip-link:focus { left: 0; }
+
+.masthead-inner,
+.site-nav,
+main,
+.colophon-inner {
+  max-width: 64rem;
+  margin: 0 auto;
+}
+
+main { padding: 2.25rem 1.25rem 3.5rem; }
+.masthead-inner { padding: 1.4rem 1.25rem 1rem; }
+.site-nav { padding: 0.55rem 1.25rem; display: flex; flex-wrap: wrap; gap: 0.25rem 1.5rem; }
+.colophon-inner { padding: 1.4rem 1.25rem 2.25rem; font-size: 0.85rem; }
+
+.prose { max-width: var(--measure); }
+
+h1, h2, h3 { line-height: 1.25; }
+h1 { font-size: 2rem; margin: 0 0 1rem; }
+h2 { font-size: 1.4rem; margin: 2.2rem 0 0.7rem; }
+h3 { font-size: 1.12rem; margin: 1.6rem 0 0.5rem; }
+
+hr { border: 0; border-top: 1px solid #ccc; margin: 2rem 0; }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.card {
+  border: 1px solid #ccc;
+  padding: 1rem 1.15rem 1.15rem;
+}
+.card h3 { margin: 0 0 0.4rem; }
+.card p { margin: 0; }
+
+@media print {
+  .site-nav, .skip-link { display: none; }
+}

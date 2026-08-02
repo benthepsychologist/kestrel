@@ -1,0 +1,14 @@
+<header class="masthead">
+  <div class="masthead-inner">
+    <a class="wordmark" href="/">{{ .Site.Title }}</a>
+    {{ with .Site.Params.tagline }}<p class="tagline">{{ . }}</p>{{ end }}
+  </div>
+  <div class="nav-rule">
+    <nav class="site-nav" aria-label="Main">
+      {{ $current := . -}}
+      {{ range .Site.Menus.main -}}
+      <a href="{{ .URL }}"{{ if $current.IsMenuCurrent "main" . }} aria-current="page"{{ end }}>{{ .Name }}</a>
+      {{ end -}}
+    </nav>
+  </div>
+</header>

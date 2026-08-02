@@ -1,0 +1,126 @@
+<!-- kit: attention/classify@{{kit_version}} — canonical: {{engine_path}}/library/skills/attention/classify/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+
+---
+name: classify
+description: Place an actor on the board (attention/board.yaml) — propose its structural kind (state/kingdom/house), posture/condition, and axis estimate (capitalization/optionality/gravity) in neutral kinds, show the reasoning, apply on Ben's confirm. The judgment entry point for the power layer.
+argument-hint: <actor slug | "postures" | new actor name>
+---
+
+# /classify — place an actor on the board
+
+The judgment entry point for `attention/board.yaml` — the power layer under
+the attention map. `/steer` is for edits Ben has already decided; `/classify`
+is the analytical pass that *proposes* a classification, shows the reasoning
+against the tests, and applies what Ben confirms. Same relationship `/crawl`
+has to research.
+
+**Neutral kinds only.** The vocabulary in `board.yaml` is always the slug
+(`kingdom`, `hedging`, `under-review`) — never a costume word. The costume
+("Kingdom", "hedging", "under interdict") lives on the site's
+`data/labels.yaml` and is projected at render time; it never enters
+classification. Classify the system; the surface is labelled elsewhere.
+
+## Modes
+
+- **`/classify <slug>`** — (re)classify one actor. Read its open threads
+  (`threads.yaml` where `entities` includes the slug) + recent items, then
+  propose its **kind** (state/kingdom/house — usually settled; flag only a
+  genuine state↔kingdom question), a **posture** (derived — table below),
+  any **conditions**, and an **axis estimate** (capitalization / optionality
+  / gravity — see below). Show the reasoning; apply on confirm.
+- **`/classify postures`** — sweep every org whose `posture` is missing or
+  carries a `# provisional` marker; propose a derived posture for each with
+  its one-line evidence. This is the same logic `/week` runs as routine.
+- **`/classify <new actor>`** — not yet on the board: propose the
+  houses-vs-orgs split (a person is a House, an organization is a realm),
+  kind, `held_by`, `depends_on` (the dependency stub — still written `liege`
+  until the rename lands), `sphere`, and a first axis estimate; add on
+  confirm. If it's a sweepable person or org, add it to `watchlist.yaml` too
+  so item `e=` tags stay legal.
+
+## Kind, then the axes (the model changed 2026-07-25)
+
+The old rank *ladder* (empire/kingdom/vassal/march with a three-test
+promotion gate) is **gone** — it was the wrong axis. Two-step now:
+
+**1. Structural kind** — usually obvious, rarely the interesting call:
+- **house** — a person (Musk, Cook). Holds one or more orgs via `held_by`.
+- **state** — a legal monopoly on force. No House. Sovereignty is *graded*
+  (US/China apex · UK/France strong · Cape Verde nominal), not binary.
+- **kingdom** — every other org. No sub-rungs; a kingdom is told apart from
+  another kingdom by the axes, not by a rank.
+- `regulator` / `route-layer` — kept as **stubs** (a state-organ and a
+  not-an-actor, pending re-home). Don't reach for them for a normal actor.
+
+**2. The axes** — the actual judgment, an aggregate `$` (or free/constrained
+/locked split) with a one-line basis. Estimate, don't assert precision:
+- **capitalization** — `$` of capital the actor *commands* (not just owns:
+  BlackRock commands ~$15.3T AUM). Rename to `commanded_capital` pending (it
+  collides with market cap; market cap is always a separate label).
+- **optionality** — how *free* that capital is (axis 1-b, the quality of the
+  pile): free (Microsoft cash) · constrained (BlackRock's fiduciary AUM) ·
+  locked/earmarked (an OpenAI raise, burning). Give the split when estimable.
+- **gravity** — `$` of economic activity in the actor's orbit. Store the
+  **GROSS** figure for now (Ben, 2026-07-25) — the value-added deflation is
+  **deferred**: the deflators (VA-share × dependency haircut) are fragile and
+  we're only comparing companies to companies yet. **Deflate later**, when we
+  compare to nation-states (a state's gravity = its GDP, already value-added,
+  so a company's gross must be deflated to compare honestly — raw gross-vs-GDP
+  flatters the company ~2×). Method preserved in `coverage-log.md` 2026-07-25
+  and `board.yaml` `axes:`.
+
+**Sovereignty is derived, not scored** — it falls out of the axes plus
+geopolitical facts (a systemically-critical kingdom can out-rank a
+micro-state). Note it in the `gloss`; don't add a sovereignty field.
+
+## Posture derivation (open-thread genres → proposed posture)
+
+Posture is **chosen** by the actor; derive it from the *dominant* genre(s)
+on its open threads. One posture per org.
+
+| dominant genre(s) on the actor's open threads | posture |
+| --- | --- |
+| `hedge` | `hedging` |
+| `buildout-race`, `resource-move` (building out) | `expanding` |
+| `legitimacy-dispute` (as the accused), `border-war` (defending) | `at-war` |
+| `capital-flow` out / narrowing / cuts | `retrenching` |
+| integration of prior gains, no new ground | `consolidating` |
+| no live threads this cycle | `dormant` |
+
+**Conditions are imposed, not chosen** — set them *alongside* a posture,
+never instead of one (zero-or-more per org):
+- a ruler transition / `succession` thread → `in-succession`
+- a regulator action pending (a `labor-action` complaint, framework
+  exclusion, an enforcement move) → `under-review`
+
+Exogenous genres (`scarcity`, `exogenous-shock`) describe weather on the
+board, not an actor's posture — they don't set one.
+
+## Rules
+
+1. **A change of kind is an EVENT, never silent.** A state↔kingdom shift is
+   shown loudly, logged to `coverage-log.md`, and **offered as a thread**
+   (hand the narrative to `/steer`). Never edit a kind without surfacing it.
+   A large re-estimate of an axis is worth surfacing the same way.
+2. **Posture is a proposal until Ben confirms.** On confirm, drop the
+   `# provisional` marker. Ben can override any derivation — the table is a
+   default, not a verdict.
+3. **Anomalies stay anomalous (§8.4).** Don't force a clean bucket to tidy
+   the taxonomy — a genuine edge keeps its `gloss`. With the axis model most
+   old "anomalies" just resolve to a distinctive axis profile (Nvidia: a
+   kingdom whose gravity dwarfs its capitalization — it holds the mines
+   everyone rents). Flag the profile; don't force it.
+4. Tag every edit `# classify YYYY-MM-DD` (or `# ben-steer` when Ben
+   dictates the call outright) and append one line to `coverage-log.md`.
+5. **YAML guardrail:** `yaml.safe_load` `board.yaml` after every edit; on
+   failure `git checkout --` and retry.
+6. **Republish** so the `/map/` pages reflect the change: `/publish --push`
+   regenerates `data/board.json` (kind, posture, holdings, and the axes all
+   flow through the publisher allowlist).
+
+## Not this skill
+
+The costume/labels (site-side `data/labels.yaml`), a thread's genre
+(`/steer set genre`), or item-level entity tagging (that's `/daily`
+curation). This skill only touches `board.yaml` (+ a watchlist add when a
+new actor is sweepable).

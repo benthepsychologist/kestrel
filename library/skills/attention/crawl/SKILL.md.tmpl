@@ -1,0 +1,44 @@
+<!-- kit: attention/crawl@{{kit_version}} — canonical: {{engine_path}}/library/skills/attention/crawl/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+
+---
+name: crawl
+description: Backward crawl — pull the backstory of a thread or topic from the external sources into a finding with a provenance bundle. Depth on demand.
+argument-hint: <thread-slug or free topic>
+---
+
+# /crawl <thread-slug or topic> — backstory on demand
+
+The "dive" in hover-and-dive. Depth is pulled when Ben wants it, never
+pre-stocked.
+
+## Steps
+
+1. **Resolve the target** — a `threads.yaml` slug (use its terms + watch
+   question) or a free topic (draft terms from it; offer to open a thread
+   after).
+2. **Crawl backwards** through the external SoT: GDELT (DOC API ≤ ~3 months;
+   **BigQuery public dataset beyond** — authed, verified 2026-07-20),
+   OpenAlex/Crossref for the research spine, EDGAR full-text for the money
+   trail, CourtListener/Federal Register for the legal-regulatory arc, as
+   the topic warrants. Subagent sweeps (sonnet-class) per source family;
+   cite everything. **Pre-flight (added 2026-07-22 after a live misfire):**
+   the session WebSearch budget is shared and may already be spent by the
+   day's /daily sweeps — if a search-dependent agent reports budget
+   exhaustion, don't retry it; re-dispatch on the API path (GDELT via curl
+   with ~6s pacing + WebFetch of known/returned URLs + Federal
+   Register/GovTrack APIs), which needs no WebSearch at all.
+3. **Write the finding** — `artifacts/findings/<slug>-<date>.md`: the
+   narrative arc (dated events, actors, money, open questions), frame-neutral,
+   every claim carrying a source link.
+4. **Bundle it** — `artifacts/bundles/<slug>-<date>/provenance.yaml` (query
+   → items → run manifests); add `captures/` only for evidence-grade cites
+   that could vanish.
+5. **Backfill the timeline** — distill the finding into dated entries
+   appended under `## ← Backstory` in `artifacts/threads/<slug>.md`, each
+   tagged `⟨crawl <date>⟩` (the finding stays the deep artifact; the
+   timeline gets the readable spine); set `crawled:` in its frontmatter.
+   Any dated *future* expectations the crawl surfaces go into
+   `attention/upcoming.yaml` (`logged_by: crawl`).
+6. **Close the loop** — update the thread's `notes:`/`watch:` with what the
+   backstory settled; surface the finding in the next daily's read (the
+   thread's page view picks the backstory up at the next render).
