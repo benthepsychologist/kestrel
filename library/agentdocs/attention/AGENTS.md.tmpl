@@ -235,10 +235,22 @@ Re-running `/daily` later the same day is safe (building digests rebuild in
 place). **Collection is collectors-first since 2026-07-28** (18 registered
 sources via `tools/collect.py` as of 2026-08-03 — grown from the original
 12; agents only fill gaps + tier-2 depth — the skill's dispatch plan);
-curation/critic remain agentic until P3 lands. Known live limitation: the
-runner's serial fan-out has been killed by its own timeout on three
-consecutive runs (last measured 15/18 sources completing) — diagnosed and
-filed to kestrel's INBOX 07-31; the engine repo owns the fix.
+curation/critic remain agentic until P3 lands. **Known live limitation —
+re-measured 2026-08-04, and the previous description of it was wrong.** The
+runner is a plain sequential loop with no concurrency, so it is SLOW: a full
+run takes **~59 minutes**. It does **not** hang and is **not** killed by a
+timeout — on 08-04 it completed **17/18, exit 0**. The earlier claim here
+("killed by its own timeout on three consecutive runs, 15/18 sources") was an
+artefact of reading the alphabetical progress mid-run while GDELT was
+separately failing in milliseconds on an unset `KESTREL_CONTACT_EMAIL`,
+contributing nothing. That variable is now set. Where the time actually goes:
+**semantic_scholar ~23 min (39%), google_news_rss ~14 min (24%), gdelt ~11½
+min (20%)**, everything else ~10 min combined. ⚠️ Budget a **full hour**, do
+not set a short timeout and read the kill as a bug, and do not parallelise
+*inside* `semantic_scholar` — `base.pace()` is a plain `time.sleep()`, not a
+shared limiter, so concurrent workers there would 429-storm. Measurements and
+the fix options are in kestrel's INBOX (`2026-08-04-…-collect-py-timings-
+remeasured.md`, amending the 07-31 item); the engine repo owns the fix.
 
 ## The steering loop (the growth mechanics — draft, Ben 2026-07-20)
 
