@@ -56,3 +56,28 @@ work happens in the instance repos, with their own AGENTS.md).
     Every agent report gets independently spot-verified before its work
     lands — the day's record: every gate that was re-run held, and three
     real bugs were caught by gates, not luck.
+11. **The write relationship with instance repos is one-way, and it runs
+    through kestrel's own tooling, not ad hoc.** Discipline 6 already
+    says instance repos are tended, not owned — this makes the boundary
+    explicit on both sides. **Downstream (kestrel → instance) is
+    sanctioned and expected:** `kit.py install`/`sync --apply`,
+    `tend.py`'s write-back, and `publish.py`'s staging are the engine
+    doing its designed job, not a boundary violation, and a kestrel
+    session may run them. **Upstream (instance → kestrel) is never
+    direct, from either side.** An instance session hand-editing
+    `kestrel/library/` (or any other kestrel file) is out of its zone
+    regardless of how obviously correct the fix is; a kestrel session
+    accepting that fix must still go through review, not a same-turn
+    trust. The one sanctioned channel is a brief left in
+    `INBOX/<date>-<repo>-<slug>.md`, dropped and not committed by the
+    sender, reviewed and committed by a kestrel session. **Why this is
+    written here and not enforced by a hook** (Ben, 2026-08-04): a
+    machine-wide `PreToolUse` hook was tried and hardcoded a single
+    zone for every session on the container, so it misfired on
+    legitimate in-repo work everywhere except the one repo it was built
+    for — unworkable for a machine that runs multi-repo agents
+    constantly. Removed same day; the boundary is carried by each repo's
+    own written instructions instead — this discipline for kestrel, the
+    "jurisdiction" sections in the rendered `AGENTS.md`/`CLAUDE.md` for
+    each instance kind. See `INBOX/2026-08-04-theprojection-data-kit-docs-
+    instruct-editing-kestrel.md` for the incident this responds to.

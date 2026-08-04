@@ -327,39 +327,49 @@ doing now" roll-up shown atop each `/map/<slug>/` page). The synthesis is
 refreshed on `/daily` (for actors that moved) and `/week` (full pass);
 it's a roll-up of threads + posture, not fresh research.
 
-## ⚠️ THIS FILE IS KIT-MANAGED — edit it and you must push the edit upstream
+## ⚠️ THIS FILE IS KIT-RENDERED — a local edit is legitimate, but it doesn't reach kestrel by itself
 
 `AGENTS.md` is rendered from
 `{{engine_path}}/library/agentdocs/attention/AGENTS.md.tmpl` and tracked
-by hash in `.claude/kit.yaml`. **Editing it here without back-porting
-creates silent drift**, and the next `kit.py install` will either flag a
-conflict or — if someone resolves it the wrong way — overwrite your edit
-with an older copy.
+by hash in `.claude/kit.yaml`. Editing it here is fine — that's how a real
+correction gets made and read immediately — but it is a **local** edit
+only. It does not update the canonical template, and it is not supposed
+to.
 
-**This already happened.** Between 2026-08-01 and 2026-08-04 the flash
-lifetime rules (discipline 10) were written straight into this file and
-never reached the template, which did not contain them at all; a kit
-dry-run on 08-04 wanted to replace this file with a version missing them
-*and* missing the engine-split intro. Repaired 2026-08-04 by adopting this
-file into the template and re-tokenizing.
+**Jurisdiction is explicit, not assumed** (Ben, 2026-08-04, after a
+session edited kestrel's engine code — `tools/render_read.py` and a
+structural change to `tools/kit.py`'s selection logic — while only asked
+to fix two other repos: *"your zone of responsibility is this repo and
+its site. You should NEVER EVER edit ANYTHING in any other repo without
+explicit permission for that specific repo."*). **This session's write
+zone is `{{instance_path}}` and `{{site_sibling}}` only.** `{{engine_path}}`
+— kestrel, the engine — is out of zone. Being right about what the
+template should say is not authority to write it there yourself.
 
-**So, after ANY edit to this file (or `CLAUDE.md`), before you close the
-session:**
+**What that means in practice:**
 
-```
-cd {{engine_path}}
-python3 tools/kit.py install {{instance_path}} --adopt AGENTS.md
-# then RE-TOKENIZE the template — adopt copies verbatim, so this instance's
-# literal values land in it; restore the template tokens
-# (instance_path / engine_path / site_sibling) by hand.
-python3 tools/kit.py render {{instance_path}} --out /tmp/kitcheck
-diff /tmp/kitcheck/AGENTS.md {{instance_path}}/AGENTS.md   # must be empty
-```
+- After editing this file (or `CLAUDE.md`), **`kit.py sync` will report
+  this instance `dirty`. That is the correct outcome, not a fault to
+  clear.** It means "this instance has diverged from the template; its
+  owner should look," and `kit.py` never auto-applies to a dirty target,
+  so nothing is at risk in the meantime.
+- **Never** run `kit.py install --adopt` from here to pull the fix back
+  into the canonical template — that command writes into
+  `{{engine_path}}`, which is exactly the out-of-zone write above.
+- Instead, write up the change as a brief:
+  `{{engine_path}}/INBOX/<date>-{{instance_name}}-<slug>.md` (format:
+  global `CLAUDE.md`'s "Handing dev work to another repo" section).
+  **Drop it there; do not commit it, and do not push kestrel.** kestrel's
+  own resident agent or Ben decides whether it belongs in the template.
 
-`kit.py sync` reports drift across all instances and **never auto-applies
-to a dirty one** — that guard is what stopped the 08-04 overwrite, so a
-`dirty` line in its output is a real signal, not noise. Clear it properly
-rather than by discarding.
+**Why this replaced the old instruction (2026-08-04):** the previous
+version of this section told the reader to `cd {{engine_path}}` and run
+`kit.py install --adopt` themselves, then push kestrel — written in good
+faith on 2026-08-01 to stop a real drift problem, but it institutionalized
+the exact write the zone rule above now prohibits. It was itself one of
+three places this instance's docs told a reader to go edit kestrel
+directly; the fix is filed as a brief, not applied here, for the same
+reason everything else above routes through one.
 
 ## Session close
 
@@ -373,9 +383,12 @@ End substantive sessions with these steps, in order:
    manifest is incomplete); they are receipts, not scratch, and are easy
    to leave untracked because the publisher writes them after the work is
    already committed.
-3. **If you edited `AGENTS.md` or `CLAUDE.md`, back-port them** per the
-   kit-managed warning above, and push `{{engine_path}}` too. A doc edit
-   that never reaches the library is a change that silently un-happens.
+3. **If you edited `AGENTS.md` or `CLAUDE.md`, do not back-port them
+   yourself.** Per the jurisdiction rule above, file a brief in
+   `{{engine_path}}/INBOX/` describing the change and why, and stop there
+   — no commit, no push of `{{engine_path}}`. This instance showing
+   `dirty` in `kit.py sync` afterward is expected until kestrel's owner
+   acts on the brief.
 
 **Why step 2 is written down** (Ben, 2026-07-29, pre-split — the reasoning
 holds, only the repo name changed): `/publish --push` pushes

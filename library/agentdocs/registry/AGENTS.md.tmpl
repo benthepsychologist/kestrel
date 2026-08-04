@@ -1,4 +1,4 @@
-<!-- kit: registry/AGENTS@2026-07-31.2 — canonical: {{engine_path}}/library/agentdocs/registry/AGENTS.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+<!-- kit: registry/AGENTS@2026-07-31.2 — canonical: {{engine_path}}/library/agentdocs/registry/AGENTS.md.tmpl — provenance only. A local edit is fine; kit.py sync will flag drift. Route a wanted template change to kestrel's INBOX/, never a direct edit. -->
 
 # AGENTS.md — therapybulletin operating disciplines
 
@@ -56,13 +56,13 @@ registry-specific ones.
      template above this line still lives at kestrel's
      library/agentdocs/registry/AGENTS.md.tmpl and still governs;
      `kit.py sync` will flag this file `dirty` on a future library bump
-     because of this section — that's expected, resolve it with
-     `install --adopt` (pulls this addendum's text back into the
-     canonical template, itself a kestrel-repo write) or `--skip` (keeps
-     this file exactly as-is), never `--discard`, which would silently
-     delete this section. If this rule ever proves generic enough to
-     want in the canonical template for every data instance, that's a
-     kestrel/INBOX/ proposal (see discipline 11 below), not a direct
+     because of this section — that's expected and correct, not a fault
+     to clear. Resolve it with `--skip` (keeps this file exactly as-is);
+     never `--discard`, which would silently delete this section, and
+     never `install --adopt` from here — that writes into kestrel, which
+     is out of this session's zone (discipline 11 below). If this rule
+     ever proves generic enough to want in the canonical template for
+     every data instance, that's a kestrel/INBOX/ brief, not a direct
      edit — including of the template that defines this very file. -->
 
 11. **Jurisdiction is explicit, not assumed.** This agent/session has

@@ -1,8 +1,12 @@
 # CLAUDE.md — theprojection-site
 
 This repo is the **published surface only** — a Hugo site with exactly one
-content writer: the kestrel engine's publish core, through theprojection's
-adapter (`{{engine_path}}/tools/publish/`, fed by `{{instance_path}}`).
+content writer: this instance's own adapter,
+`{{site_sibling}}/publish/adapter.py` (declared by that repo's
+`kestrel.yaml` `outputs.adapter`), which calls the kestrel engine's
+publish core (`{{engine_path}}/tools/publish/core.py`) for the
+guarantees. The adapter is instance code, fed by `{{site_sibling}}` — no
+per-site adapter code lives in the engine.
 
 **Single-writer contract:** `data/` and `content/threads|entities|map|claim/*`
 are generated and overwritten wholesale on every publish run — never
@@ -21,4 +25,4 @@ publish run does; fire it by hand (`curl -X POST` the hook URL) after a
 template/CSS-only change.
 
 **Upstream pointers:** engine — `{{engine_path}}`; data/instance repo —
-`{{instance_path}}`.
+`{{site_sibling}}`.
