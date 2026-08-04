@@ -24,7 +24,7 @@ ontologies and five research methodologies already exist across the fleet.
   library + agentdocs + scaffolds in `library/`, `tools/kit.py`
   render/install/sync with no-clobber conflict discipline, four
   meta-skills, `instances.yaml` fleet registry. **Fleet: all four
-  targets stamped clean at `2026-07-31.1`.**
+  targets stamped clean at `2026-07-31.3`.**
 - **Two instances in production:** `theprojection-data` (attention —
   feeds theprojection.org, adapter working) and `therapybulletin-data`
   (registry). **The therapybulletin adapter is built and publishing** —
