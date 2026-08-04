@@ -1,8 +1,12 @@
-# AGENTS.md — operating kestrel
+# AGENTS.md — operating theprojection-data
 
-You are operating Ben's personal intelligence layer. Read `README.md` first —
-it carries the principle, layout, contracts, and migration state. The design
-of record lives in the operator's private planning hub.
+You are operating Ben's personal intelligence layer — this repo is
+**instance #1** of the kestrel engine (engine/instance split, 2026-07-31).
+Read `CLAUDE.md` first for the split itself (what lives here vs. in
+`{{engine_path}}`, the `KESTREL_INSTANCE` invocation rule), then
+`README.md` for the principle, layout, and contracts below. The design
+of record lives in the pm hub:
+`streams/research-and-writing/projects/mh-tech-record/intelligence-feed-pivot.md`.
 
 ## Prime directive
 
@@ -19,10 +23,11 @@ through `attention/`.
    lose anything, something is misdesigned.
 2. **Provenance with every artifact.** An artifact without a re-fetch
    manifest is incomplete. Store *how to get it again*, never the pile.
-3. **Zero coupling to the operator's other corpora.** (Ben, 2026-07-20.)
-   After the one-time seed, nothing here imports, calls, reads from,
-   writes to, or waits on a sibling corpus. Shared workstation infra is
-   allowed — that's platform, not coupling. Evidence-grade capture, when an
+3. **Zero bizdev coupling.** (Ben, 2026-07-20; scope pinned in
+   BOOTSTRAP.md.) After the one-time seed, nothing here imports, calls,
+   reads from, writes to, or waits on bizdev. Shared workstation infra
+   (`authctl`/`gorch`) and one-time seed reads of other knowledge are
+   allowed — they're platform, not bizdev. Evidence-grade capture, when an
    artifact needs it, lives in that artifact's bundle.
 4. **Perishability rule.** Fetch-on-demand by default; `diffable` sources
    keep one prior snapshot; genuinely perishable capture belongs outside
@@ -53,7 +58,7 @@ through `attention/`.
    no provenance sidecar, and deleting it loses nothing.
 9. **Public publish is default-on, field-allowlisted, machine-checked — not
    hand-gated** (Ben, 2026-07-22: "no private information on here... I
-   don't want to hand gate the feed. This is MY feed."). `{{instance_name}}.org`
+   don't want to hand gate the feed. This is MY feed."). `theprojection.org`
    is a separate public repo kestrel feeds via `tools/publish.py`
    — never the reverse, and no other path writes there. Every thread
    publishes unless individually held back with `public: false` in
@@ -71,10 +76,48 @@ through `attention/`.
     **flash rail** (`attention/flash.yaml`) carries general-news events
     that must land regardless of lens — Ben: *"9/11? front-page."*
     **`critical` only** reaches the rail, **normally at most one active**,
-    and it **publishes to {{instance_name}} on every page** (Ben: *"this is MY
+    and it **publishes to theprojection on every page** (Ben: *"this is MY
     news feed FIRST. If its big world news it affects finance so its
     cohesive"*). A flash carries the same primary-source discipline as
-    everything else — a wrong flash is worse than a late one. Executive
+    everything else — a wrong flash is worse than a late one.
+    **A flash is a NEW EVENT, never a running state** (Ben, 2026-08-01:
+    *"lapse flash, flash only new things, escalate means need flash"*).
+    It describes the discrete event that triggered it and is **never
+    edited to carry a conflict's evolving state forward**; when its
+    trigger recedes it **lapses on its own `expires` date** rather than
+    being extended. **An escalation is itself a new event and earns its
+    own new flash** — a materially bigger strike, a new theatre, a new
+    combatant, an ordered offensive. This **reverses** the 2026-07-30
+    update-in-place precedent (where the Iran flash was widened via an
+    `updated:` field). Accepted consequence: a fast-escalating conflict
+    can briefly put an old entry and its successor on the rail at once;
+    that overlap self-clears and is not the "bar has drifted" failure the
+    at-most-one rule describes.
+    **A flash lives 24 hours — "flash means today"** (Ben, 2026-08-01:
+    *"flash messages should expire in 24h typically. flash means today."*).
+    **ENFORCED IN CODE since 2026-08-04**, not a convention the curator is
+    trusted to follow (Ben: *"fix the thing where flash messages stay for
+    longer than a day. 24h and gone."*). `render_read.flash_last_day()`
+    computes the cap: **a flash renders on its filing day and no longer.**
+    `filed` defaults to `date`; **`expires` can only SHORTEN a flash's life,
+    never extend it**, and an entry with no parsable filing day does not
+    render at all. There is no "exception with a stated reason" any more —
+    a longer `expires` is silently ignored rather than honoured. If it is
+    still on the rail after a day it has stopped being a flash and become a
+    headline. Corollary, still live: an event that surfaces **late** gets
+    24h **from filing**, which is why `filed` exists — set it explicitly on
+    a late catch and add a note saying so; being missed does not buy a fresh
+    lifespan, but it does not cost one either.
+    **Why this became code** (2026-08-04): the rule existed in this file
+    from 2026-08-01 and was violated immediately and repeatedly, because the
+    loader honoured whatever `expires` was hand-written —
+    `iran-strikes-cancelled-deal-claimed` ran **3 days**,
+    `ceuta-mass-border-crossing` ran **4**. A separate latent bug meant a
+    flash with no `expires` at all never expired. Same lesson as discipline
+    12's summary shape: *asking* for a constraint does not hold, so the
+    store enforces it. This supersedes the 3-5 day `expires` values used
+    through 2026-07-31.
+    Executive
     summaries are written in the digests' **neutral register**; the
     per-lens "Today's throughline" *is* the lens summary, and
     `<date>-front.md` is the cross-lens one. Full spec + what is still
@@ -106,8 +149,9 @@ through `attention/`.
     front's **`sections` are exactly the three lenses**, so nothing goes
     dark while the ranking stays honest; a fact appearing in both is
     deliberate — the lead is the ranking, the sections are the coverage.
-    **The three lenses are pages** (`/beat/<lens>/`), not just the
-    homepage's filter chips. Emoji come from a fixed typed set and never
+    **The three lenses are pages** (`/news/<lens>/`, nested under the
+    `/news/` dashboard since the 2026-08-03 restructure), not just the
+    dashboard's filter chips. Emoji come from a fixed typed set and never
     carry a fact alone. Two rules learned building it: a validator that
     makes good prose worse is the bug (a sentence may end on a quotation),
     and **a briefing cannot cover what it was never shown** — packs get
@@ -139,6 +183,15 @@ through `attention/`.
     global-capital's job, cross-referenced (`iran-conflict-widening` vs.
     `red-sea-oil-shock` is the reference split — same origin event, one
     thread per lens, deliberately, not one thread wearing two hats).
+    **The coverage bar, stated directly** (Ben, 2026-07-31, promoting
+    `russia-ukraine-war` after it sat as an unanswered candidate for a
+    day: "All active military conflicts that are not hyper-local get
+    coverage."). Read together with "kept deliberately small" above:
+    small applies to *detection volume* (the mechanical sweep itself
+    stays restrained, no term-list expansion), not to which real wars
+    clear the bar for promotion once surfaced — a genuine active
+    military conflict above hyper-local scale is a yes, not a judgment
+    call re-litigated per war.
 
 14. **Global Capital interprets; it doesn't just aggregate** (Ben,
     2026-07-30 — full rename from `money`: "'finance' is boring 'Global
@@ -176,12 +229,16 @@ against fixed templates (`templates/`):
 | `/crawl <thread>` | on demand | backward crawl → finding + provenance bundle + timeline backstory backfill |
 | `/map` | any time, read-only | status card: lenses, thread freshness, radar, pipeline state, gates, board |
 | `/classify <actor>` | on demand | propose an actor's node kind (person/house/corp/state/agency/group) + level + posture/condition + four-axis estimate (commanded_capital/thrust/gravity/optionality) → apply on confirm; `/classify postures` sweeps provisional postures (the logic `/week` runs) |
-| `/publish [--push]` | on demand, separate from `/daily` (not auto-chained) | push public-flagged threads to {{instance_name}}.org; stages only by default, `--push` commits/pushes/deploys live — no confirmation needed on this pipeline (Ben, 2026-07-23), plus a quick fact-check that the site's own `about.md`/`README.md` claims still match this repo's actual publish behavior |
+| `/publish [--push]` | on demand, separate from `/daily` (not auto-chained) | push public-flagged threads to theprojection.org; stages only by default, `--push` commits/pushes/deploys live — no confirmation needed on this pipeline (Ben, 2026-07-23), plus a quick fact-check that the site's own `about.md`/`README.md` claims still match this repo's actual publish behavior |
 
 Re-running `/daily` later the same day is safe (building digests rebuild in
-place). **Collection is collectors-first since 2026-07-28** (12 live sources
-via `tools/collect.py`; agents only fill gaps + tier-2 depth — the skill's
-dispatch plan); curation/critic remain agentic until P3 lands.
+place). **Collection is collectors-first since 2026-07-28** (18 registered
+sources via `tools/collect.py` as of 2026-08-03 — grown from the original
+12; agents only fill gaps + tier-2 depth — the skill's dispatch plan);
+curation/critic remain agentic until P3 lands. Known live limitation: the
+runner's serial fan-out has been killed by its own timeout on three
+consecutive runs (last measured 15/18 sources completing) — diagnosed and
+filed to kestrel's INBOX 07-31; the engine repo owns the fix.
 
 ## The steering loop (the growth mechanics — draft, Ben 2026-07-20)
 
@@ -212,7 +269,7 @@ artifacts that already have manifests.
 **The board** (`attention/board.yaml`, 2026-07-24) is a power-structure
 layer *over* the map — the major actors (Houses = people, orgs = the
 realms they hold) in neutral structural kinds, projected into costume on
-the site (`{{instance_name}}: data/labels.yaml`) and swappable live. **The
+the site (`theprojection: data/labels.yaml`) and swappable live. **The
 model changed 2026-07-25** (Ben): the feudal rank *ladder*
 (empire/kingdom/vassal/march) was the wrong axis and is gone. **It became a
 node graph on 2026-07-26:** every actor is a **node** with an orthogonal
@@ -258,24 +315,65 @@ doing now" roll-up shown atop each `/map/<slug>/` page). The synthesis is
 refreshed on `/daily` (for actors that moved) and `/week` (full pass);
 it's a roll-up of threads + posture, not fresh research.
 
+## ⚠️ THIS FILE IS KIT-MANAGED — edit it and you must push the edit upstream
+
+`AGENTS.md` is rendered from
+`{{engine_path}}/library/agentdocs/attention/AGENTS.md.tmpl` and tracked
+by hash in `.claude/kit.yaml`. **Editing it here without back-porting
+creates silent drift**, and the next `kit.py install` will either flag a
+conflict or — if someone resolves it the wrong way — overwrite your edit
+with an older copy.
+
+**This already happened.** Between 2026-08-01 and 2026-08-04 the flash
+lifetime rules (discipline 10) were written straight into this file and
+never reached the template, which did not contain them at all; a kit
+dry-run on 08-04 wanted to replace this file with a version missing them
+*and* missing the engine-split intro. Repaired 2026-08-04 by adopting this
+file into the template and re-tokenizing.
+
+**So, after ANY edit to this file (or `CLAUDE.md`), before you close the
+session:**
+
+```
+cd {{engine_path}}
+python3 tools/kit.py install {{instance_path}} --adopt AGENTS.md
+# then RE-TOKENIZE the template — adopt copies verbatim, so this instance's
+# literal values land in it; restore the template tokens
+# (instance_path / engine_path / site_sibling) by hand.
+python3 tools/kit.py render {{instance_path}} --out /tmp/kitcheck
+diff /tmp/kitcheck/AGENTS.md {{instance_path}}/AGENTS.md   # must be empty
+```
+
+`kit.py sync` reports drift across all instances and **never auto-applies
+to a dirty one** — that guard is what stopped the 08-04 overwrite, so a
+`dirty` line in its output is a real signal, not noise. Clear it properly
+rather than by discarding.
+
 ## Session close
 
-End substantive sessions with both steps, in order:
+End substantive sessions with these steps, in order:
 
 1. **Append to `log.md`** (create on first real session): what ran, what
    surfaced, what changed in `attention/`, where to pick up.
-2. **Commit and PUSH kestrel** — `git push origin master`. Commit anything
-   outstanding first, including the run's **provenance manifests**
-   (discipline 2: an artifact without a re-fetch manifest is incomplete);
-   they are receipts, not scratch, and are easy to leave untracked because
-   the publisher writes them after the work is already committed.
+2. **Commit and PUSH this repo (theprojection-data)** — `git push origin
+   main`. Commit anything outstanding first, including the run's
+   **provenance manifests** (discipline 2: an artifact without a re-fetch
+   manifest is incomplete); they are receipts, not scratch, and are easy
+   to leave untracked because the publisher writes them after the work is
+   already committed.
+3. **If you edited `AGENTS.md` or `CLAUDE.md`, back-port them** per the
+   kit-managed warning above, and push `{{engine_path}}` too. A doc edit
+   that never reaches the library is a change that silently un-happens.
 
-**Why step 2 is written down** (Ben, 2026-07-29): `/publish --push` pushes
-**{{instance_name}}**, not kestrel — it fires the site's deploy hook and
-nothing else. Nothing in `/daily`, `/publish` or any other command ever
-pushes this repo, so unpushed work accumulates *silently across sessions*
-and looks fine locally. Found 2026-07-29 with **17 commits unpushed** —
+**Why step 2 is written down** (Ben, 2026-07-29, pre-split — the reasoning
+holds, only the repo name changed): `/publish --push` pushes
+**theprojection-site**, not this repo — it fires the site's deploy hook
+and nothing else. Nothing in `/daily`, `/publish` or any other command
+ever pushes this repo on its own, so unpushed work accumulates *silently
+across sessions* and looks fine locally. Found 2026-07-29 (pre-split, in
+what was then kestrel's own working tree) with **17 commits unpushed** —
 six from that session and **ten inherited from the previous evening's**,
 which had also closed without pushing. A clean `git status` is not
-evidence the work is safe; check `git log @{u}..` before calling a session
-done.
+evidence the work is safe; check `git log @{u}..` — on this repo AND on
+`{{engine_path}}` and `{{site_sibling}}`, since none of
+the three ever push each other — before calling a session done.
