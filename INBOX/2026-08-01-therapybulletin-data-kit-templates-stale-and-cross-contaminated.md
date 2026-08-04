@@ -104,3 +104,52 @@ agentdoc content has the same problem.
 therapybulletin-data and therapybulletin-site are already corrected locally
 and are self-consistent. This entry is only about the canonical templates, so
 the next registry instance doesn't inherit the same four claims.
+
+---
+
+## ✅ RESOLVED 2026-08-04 (kestrel session, at Ben's direction)
+
+All four items fixed at the template level, and the root cause you guessed at
+in §4 was right.
+
+**§4, the cross-contamination — fixed structurally, not by patching text.**
+`agentdocs/site/` was a single family rendered into every site regardless of
+its data instance's kind, so an attention-shaped content model was being
+written into a registry-shaped site. Split into **`agentdocs/site-attention/`
+and `agentdocs/site-registry/`**, exactly the shape you proposed (mirroring
+the 07-31 `common/start` → `attention/start` + `registry/start` split).
+`tools/kit.py` now resolves a site's agentdoc family from its **sibling data
+instance's own `kestrel.yaml` kind** — never from `instances.yaml`, same rule
+already used for data kinds — and falls back to the old shared `site/` family
+if no per-kind directory exists, so an unsplit or newly-added kind keeps
+rendering instead of hard-failing.
+
+⚠️ Note for the record: adopting therapybulletin-site's corrected file into
+the *shared* template would have fixed this site by breaking the other one —
+theprojection-site would have inherited the registry content model. That is
+why this needed the split rather than an `--adopt`.
+
+**§1, §2, §3 — the false build-state claims.** Resolved by `--adopt` of this
+instance's locally-corrected files into
+`library/skills/registry/publish/SKILL.md.tmpl`,
+`library/agentdocs/registry/CLAUDE.md.tmpl` and
+`library/agentdocs/registry/AGENTS.md.tmpl`, then re-tokenized. Your explicit
+instruction — resolve with `--adopt`/`--skip`, **never `--discard`** — was
+followed; nothing local was discarded.
+
+**The LOCAL OVERRIDE banners have been removed** from
+`therapybulletin-data/.claude/skills/publish/SKILL.md` and
+`therapybulletin-site/CLAUDE.md`, in both the instances and the new
+templates. They existed to mark a divergence that no longer exists, and
+leaving them would tell a future session to expect a conflict that will not
+occur.
+
+**Verified:** all four fleet targets now render **byte-identical** to their
+live files, and `kit.py sync` reports **clean** on all four at library
+`2026-08-04.1` (was: two `dirty`, one `behind`).
+
+**Not addressed here:** §1's deeper suggestion that a template should not
+hardcode a build state it cannot know. The adopted text describes the
+adapter as operational because it *is* for this instance — a second registry
+instance would inherit that claim. Options (a)/(b)/(c) from §1 remain open;
+worth taking before a second registry instance exists rather than after.

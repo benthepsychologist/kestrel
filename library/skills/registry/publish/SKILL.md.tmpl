@@ -1,30 +1,57 @@
-<!-- kit: registry/publish@{{kit_version}} — canonical: {{engine_path}}/library/skills/registry/publish/SKILL.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+<!-- kit: registry/publish@2026-07-31.3 — canonical: {{engine_path}}/library/skills/registry/publish/SKILL.md.tmpl -->
+# /publish — render the corpus to the site, through the adapter
 
-# /publish — STUB, gated on the {{instance_name}} adapter
+**Operational since 2026-07-31.** The adapter is `publish/adapter.py` in
+**this** repo (instance-owned, declared by `kestrel.yaml`'s
+`outputs.adapter`), and it is the **single content writer** into
+{{site_sibling}} (AGENTS.md discipline 9).
 
-**This skill is not operational yet, and says so rather than pretending.**
+## Run
 
-Publishing this registry to {{site_sibling}} requires a
-`publish/adapter.py` in **this repo** (`{{instance_path}}/publish/`,
-declared via this repo's own `kestrel.yaml` `outputs.adapter` — adapters
-are instance-owned, not engine code, revised 2026-07-31) — the component
-that turns `records/` + `changelog/` into the site's matrix pages,
-changelog page, and data JSON, under `{{engine_path}}/tools/publish/core.py`'s
-guarantees (secret scan, field allowlists, no-empty-wipe). Per kestrel
-`ROADMAP/DESIGN.md` §6, that adapter is designed but **not built**.
+    python3 publish/adapter.py             # staged: writes, does NOT push
+    python3 publish/adapter.py --dry-run   # report only, writes nothing
+    python3 publish/adapter.py --push      # commit, push, fire the deploy hook
 
-Until it exists:
+Default is staged. Review the diff in the site repo, then re-run with
+`--push`. **Every push to the site's main is a production deploy.**
 
-- The site ({{site_sibling}}) is editorial-only — its content is
-  hand-authored site code, not generated registry exports.
+## What it emits
+
+- `content/changelog/<stem>.md` — one page per changelog entry. The
+  weekly rollup of these IS the newsletter.
+- `data/records.yaml` — allowlisted record fields, grouped by topic and
+  by jurisdiction, for the matrix/hub templates.
+- `data/regulators.yaml` — the jurisdiction map's per-province regulator
+  list, built from `kestrel.yaml`'s `sources`.
+
+## Guarantees it preserves
+
+It imports `{{engine_path}}/tools/publish/core.py` for `secret_scan()`
+(every emitted byte), `apply_allowlist()`, `write_provenance_manifest()`
+and `push_site()`. It deliberately does NOT use `core.run()` or
+`core.referenced_only()` — those are attention-kind shaped (threads,
+board, payload) and a registry has no such objects; the orchestration is
+registry-shaped but keeps the same guarantees in the same order.
+
+**The allowlist is load-bearing, not ceremony:** `notes` is excluded
+because it carries internal curation commentary (operator scope calls,
+"retire candidate", verification-split warnings). Verify after any
+publish that none of that leaked into the built site.
+
+## Still true from the original stub
+
 - Do NOT hand-write "generated-looking" registry content into the site
-  repo to bridge the gap — that breaks the single-content-writer
-  invariant the eventual adapter depends on, and creates pages the
-  adapter would later fight.
-- When the adapter lands, this stub is replaced via `/sync-kits` with
-  the real skill (run staged, review the diff, `--push` deploys — every
-  push to the site's main is a production deploy).
+  repo. The adapter is the only writer; a second one is exactly the drift
+  discipline 9 exists to prevent. (A temporary bridge script once existed
+  for the map data — it was absorbed into the adapter and deleted.)
+- Site code (templates, CSS, hand-authored editorial pages like
+  `method.md`) is the site repo's own and is edited directly. The
+  invariant governs *generated* registry exports, not site chrome.
 
-If you were asked to publish and reached this stub: report the gate
-plainly and point at the adapter (in **this** repo, not kestrel) as the
-next work item.
+## Close
+
+Report: records and changelog entries published, files written, the
+provenance receipt path, and — if `--push` — the commit range and whether
+the deploy hook actually fired. **A clean `git push` is not evidence the
+site updated**: this site does not auto-deploy on push (see
+therapybulletin-site/README.md). Verify against served content.

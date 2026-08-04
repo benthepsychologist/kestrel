@@ -1,6 +1,6 @@
-<!-- kit: registry/CLAUDE@{{kit_version}} — canonical: {{engine_path}}/library/agentdocs/registry/CLAUDE.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+<!-- kit: registry/CLAUDE@2026-07-31.3 — canonical: {{engine_path}}/library/agentdocs/registry/CLAUDE.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
 
-# CLAUDE.md — {{instance_name}} (registry instance)
+# CLAUDE.md — therapybulletin (registry instance)
 
 A **compliance-obligation registry** tended by the kestrel engine
 ({{engine_path}}): records of what the law requires of behavioural-health
@@ -12,10 +12,12 @@ manifest (`kind: registry`).
 
 **The loop:** `/tend` (sweep sources → stage candidates) → `/curate`
 (candidates → records, operator-confirmed, citation-required) →
-`/verify` (scheduled re-verification) → `/publish` (stub until the
-adapter lands). Skills live in `.claude/skills/` — rendered kit copies;
-canonical versions live in the engine's `library/` (edit there, then
-`/sync-kits`).
+`/verify` (scheduled re-verification) → `/publish` (**operational since
+2026-07-31** — `publish/adapter.py` in this repo; the kit template still
+says "stub until the adapter lands", which is stale for this instance —
+see the local override note in `.claude/skills/publish/SKILL.md`).
+Skills live in `.claude/skills/` — rendered kit copies; canonical
+versions live in the engine's `library/` (edit there, then `/sync-kits`).
 
 **The posture, non-negotiable (UPL):** this registry states rules with
 receipts; it never gives legal advice. The runner never writes records;

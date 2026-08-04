@@ -383,7 +383,27 @@ def render_kit(target_root: Path, library_root: Path, entries: list, instances_p
             )
         kind = "site"
         families = []
+        # Site agentdocs are per-DATA-KIND (2026-08-04). A site's content model
+        # is dictated by whatever its data instance emits, so ONE shared `site`
+        # template cannot be correct for both kinds: the single template was
+        # written against an attention-shaped site and rendered verbatim into a
+        # registry-shaped one, naming seven content paths that do not exist
+        # there and pointing the single-writer contract at the wrong files
+        # (INBOX 2026-08-01, "kit templates stale and cross-contaminated").
+        # Same defect and same remedy as the common/start -> attention/start +
+        # registry/start split on 2026-07-31: a template that looked generic
+        # was really one kind's shape in disguise.
+        #
+        # Prefer `agentdocs/site-<sibling kind>/`; fall back to `agentdocs/site/`
+        # so a not-yet-split or newly-added kind keeps rendering instead of
+        # hard-failing. Sibling kind comes from the DATA instance's own
+        # kestrel.yaml, never from instances.yaml — same rule as for data kinds.
         agentdoc_kind = "site"
+        _sib_root = _resolve_path(backref["path"], instances_path.parent)
+        _sib_manifest = load_target_manifest(_sib_root)
+        _sib_kind = (_sib_manifest or {}).get("kind")
+        if _sib_kind and (library_root / "agentdocs" / f"site-{_sib_kind}").is_dir():
+            agentdoc_kind = f"site-{_sib_kind}"
 
     tokens = build_tokens(kind=kind, target_root=target_root, manifest=manifest,
                           entries=entries, instances_path=instances_path,

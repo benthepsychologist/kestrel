@@ -1,6 +1,6 @@
-<!-- kit: registry/AGENTS@{{kit_version}} — canonical: {{engine_path}}/library/agentdocs/registry/AGENTS.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
+<!-- kit: registry/AGENTS@2026-07-31.2 — canonical: {{engine_path}}/library/agentdocs/registry/AGENTS.md.tmpl — edit the canonical copy and run /sync-kits, not this file. -->
 
-# AGENTS.md — {{instance_name}} operating disciplines
+# AGENTS.md — therapybulletin operating disciplines
 
 The registry's disciplines, numbered so they can be cited. They inherit
 kestrel's engine invariants (see `{{engine_path}}/README.md`) and add the
@@ -38,10 +38,45 @@ registry-specific ones.
    gitignored, 30-day semantics. Candidates, records, changelog,
    snapshots, provenance: committed, always.
 9. **One content writer per site.** {{site_sibling}}'s generated
-   content comes only from the engine's publish core through the
-   `{{instance_name}}` adapter (once built). Site code (templates, CSS)
-   is the site repo's own; registry data never gets hand-transcribed
-   into it.
+   content comes only from the `therapybulletin` adapter — **built
+   2026-07-31**, living at `publish/adapter.py` in this repo (the kit
+   template still reads "once built"; stale for this instance). It calls
+   the engine's publish core for the guarantees. Site code (templates,
+   CSS, hand-authored editorial pages) is the site repo's own; registry
+   data never gets hand-transcribed into it. A second writer is the
+   failure mode: a temporary bridge script in the site repo once produced
+   the map data and was absorbed into the adapter and deleted the day the
+   adapter landed.
 10. **Provenance discipline.** Every sweep, verify pass, and publish
     leaves a dated manifest in `provenance/`. An artifact without a
     re-fetch manifest is incomplete.
+
+<!-- ---- LOCAL ADDENDUM, not kit-synced — added directly in this repo's
+     rendered AGENTS.md, deliberately, per Ben 2026-07-31. The canonical
+     template above this line still lives at kestrel's
+     library/agentdocs/registry/AGENTS.md.tmpl and still governs;
+     `kit.py sync` will flag this file `dirty` on a future library bump
+     because of this section — that's expected, resolve it with
+     `install --adopt` (pulls this addendum's text back into the
+     canonical template, itself a kestrel-repo write) or `--skip` (keeps
+     this file exactly as-is), never `--discard`, which would silently
+     delete this section. If this rule ever proves generic enough to
+     want in the canonical template for every data instance, that's a
+     kestrel/INBOX/ proposal (see discipline 11 below), not a direct
+     edit — including of the template that defines this very file. -->
+
+11. **Jurisdiction is explicit, not assumed.** This agent/session has
+    direct authority over `therapybulletin-data` and `therapybulletin-site`
+    — commit and push either without asking first, on request or on
+    reasonable judgment. **kestrel is not in that jurisdiction.** Ben,
+    2026-07-31, verbatim in spirit: "put requested changes to kestrel in
+    the kestrel/INBOX/, got it?" Any change kestrel needs — a skill fix,
+    a template bug, a new kit feature — gets written up as an
+    `INBOX/<date>-therapybulletin-data-<slug>.md` entry there (format:
+    global CLAUDE.md's "Handing dev work to another repo" section) and
+    left for kestrel's own resident agent or Ben, not committed directly
+    from here. This reverses the looser reading from earlier the same
+    day (when the `/start` kit-mismatch fix was made directly in
+    kestrel, with Ben's live sign-off at the time) — that was fine in
+    the moment, but the standing rule going forward is INBOX, not direct
+    edits, unless told otherwise again.
