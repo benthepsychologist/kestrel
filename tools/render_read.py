@@ -13,7 +13,7 @@ from the newest input mtime, not the wall clock).
 Usage: python3 tools/render_read.py [--today YYYY-MM-DD] [--asks asks.json]
 """
 import argparse, json, os, re, sys
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 import yaml
 
@@ -133,12 +133,55 @@ def load_threads():
     return out
 
 
+def _flash_day(v):
+    """Coerce a flash date field to a date, or None if unparsable."""
+    if isinstance(v, datetime):
+        return v.date()
+    if isinstance(v, date):
+        return v
+    try:
+        return date.fromisoformat(str(v)[:10])
+    except (TypeError, ValueError):
+        return None
+
+
+def flash_last_day(f):
+    """The last day a flash may render. 24 HOURS, ENFORCED — not advisory.
+
+    Ben, 2026-08-01: "flash messages should expire in 24h typically. flash
+    means today." Restated 2026-08-04: "fix the thing where flash messages
+    stay for longer than a day. 24h and gone."
+
+    A flash renders on its FILING day and no longer. `filed` defaults to
+    `date`; a late-surfacing event carries an explicit `filed` so its 24h
+    runs from when it was filed, not from an event it missed (the
+    late-surfacing corollary in AGENTS.md discipline 10). `expires` may only
+    ever SHORTEN that — it can no longer extend it.
+
+    WHY THIS IS CODE AND NOT A CONVENTION (2026-08-04): the 24h rule lived
+    only in AGENTS.md, and the loader trusted whatever `expires` the curator
+    hand-wrote. `iran-strikes-cancelled-deal-claimed` was dated 08-01 with
+    `expires: 08-03` and therefore sat on the rail for three days — the exact
+    drift the rule existed to prevent. Worse, the old guard was
+    `if exp and exp < today`, so a flash with NO `expires` never expired at
+    all. Both are fixed here: the cap is computed, not read, and an entry
+    with no parsable filing day does not render rather than rendering
+    forever. Same discipline as every other shape in this repo — enforced,
+    not requested.
+    """
+    day = _flash_day(f.get("filed")) or _flash_day(f.get("date"))
+    if day is None:
+        return None
+    exp = _flash_day(f.get("expires"))
+    return min(exp, day) if exp else day
+
+
 def load_flash(today):
     """Active flashes for the rail (ROADMAP §Salience, Ben 2026-07-29).
 
     `critical` only reaches the rail; `major` is carried in the payload so the
     executive summary can fold it in, but never renders as a rail banner.
-    Expiry is inclusive of the expiry date itself.
+    Lifetime is capped at 24h by flash_last_day() — see there.
     """
     path = os.path.join(ROOT, "attention/flash.yaml")
     if not os.path.exists(path):
@@ -146,8 +189,8 @@ def load_flash(today):
     raw = (yaml.safe_load(open(path)) or {}).get("flashes") or []
     out = []
     for f in raw:
-        exp = f.get("expires")
-        if exp and str(exp) < today.isoformat():
+        last = flash_last_day(f)
+        if last is None or today > last:
             continue
         out.append({
             "id": f.get("id"), "date": str(f.get("date")),

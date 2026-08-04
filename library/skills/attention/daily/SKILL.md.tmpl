@@ -97,9 +97,18 @@ archive; the page is derived from them.
      (Ben, 2026-07-29). **`critical` only reaches the rail; normally at
      most one is active**, two is exceptional. Same primary-source
      discipline as everything else — a wrong flash is worse than a late
-     one, and an unverified one says so on its face. Set `expires` (a few
-     days); `/week` prunes. **Most days have no flash, and writing none
-     is the correct outcome** — the rail is worthless if it fires often.
+     one, and an unverified one says so on its face. **A flash lives 24
+     hours and that is ENFORCED IN CODE** (Ben, 2026-08-04: "24h and
+     gone") — `render_read.flash_last_day()` renders it on its filing day
+     and no longer. So **do NOT set `expires` to buy extra days: a value
+     longer than the filing day is ignored, not honoured.** `expires` can
+     only SHORTEN. When catching a LATE event, set `filed:` to today so its
+     24h runs from the catch rather than from the event you missed. If a
+     story still warrants the rail tomorrow, that means a NEW event
+     happened — file a new flash for it, per the
+     new-event-never-a-running-state rule. **Most days have no flash, and
+     writing none is the correct outcome** — the rail is worthless if it
+     fires often.
    - **write the cross-lens executive summary** to
      `artifacts/digests/daily/<date>-front.md` — a `## Today's throughline`
      section in the digests' **neutral register** (not first person),
