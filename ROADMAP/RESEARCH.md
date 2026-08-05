@@ -321,7 +321,10 @@ Ben's bottom-up ordering, verbatim:
 > only THEN downstream use cases adoption and innovation."
 
 Layers marked ✚ are the agent's additions under *"plus whatever I haven't
-thought of"* — **ratification pending, see the open-questions item.**
+thought of"* — **ratified in full, 2026-08-05 (open-questions Q1).** Ben
+took all twenty rather than the agent's recommended v1-subset-plus-dark
+option: every layer below is in scope for real sourcing, not held as a
+named-but-empty placeholder.
 
 | # | layer | note |
 | --- | --- | --- |
@@ -1007,6 +1010,48 @@ The `/color-team` library skill in §11.3 is still unbuilt code, but its
 *method* is no longer speculative: it has a completed, ratified run behind
 it, with the eight findings above as its first calibration data.
 
+### 7.10 Stage-3 extraction is slot-based, not open atom extraction (Q5, ruled 2026-08-05)
+
+The knowledge-graph project's dual-pass mechanism (§7.4–§7.6, the
+31.62%-delta/no-convergence run) was built for a different failure mode
+than the one q1's Stage 3 actually faces. That mechanism measures whether
+two blind readers extract the *same open-ended set of atoms* from a
+source that requires interpretation to read — the risk it targets is
+genuine disagreement about what a passage means. Buildout sources (10-Ks,
+press releases, interconnection filings) mostly don't have that problem:
+what they state is usually plain. Running full open-atom dual-pass
+extraction on them would be solving a problem this domain doesn't mostly
+have.
+
+**What q1's Stage 3 extraction actually is: targeted, schema-driven
+nugget extraction, not "pull every atom."** Each source is polled for a
+fixed set of information slots — named suppliers, named customers, money
+that moved (amount, direction, instrument/contract terms), dates,
+capacity figures — the same slots §6's claim record already wants filled.
+Because the target is a specific, named set of slots rather than
+open-ended coverage of everything a document contains, agreement between
+extractors should run higher and more consistently than the knowledge-
+graph project's own number — but that is a hypothesis, not an assumption:
+**it gets tested empirically against real q1 data, budgeted at roughly an
+hour or two once that data exists, and the extraction/agreement design is
+built and revised iteratively as part of the research program itself,**
+not frozen in advance of seeing a single real source.
+
+**The reliability risk that remains is fidelity, not interpretation** — a
+single extractor misreading a plainly-stated figure (a phase-1 capacity
+figure logged as the site total, a queue position logged as a signed
+agreement) — and §7.5's same-model-ceiling finding still applies in full:
+agreement between two Claude passes measures session variance, not real
+extraction reliability. **Cross-checking uses 2+ genuinely distinct
+models** — sonnet-class agents at minimum, with a real cross-family check
+(Gemini or GPT, not a second Claude session) where the stakes justify it,
+and haiku wherever the slot is mechanical enough for it to do the job
+identically for less. **Reliability is logged per information-type** (a
+10-K's named-supplier slot vs. a press release's dollar-amount slot are
+tracked separately, not pooled into one corpus-wide agreement number) —
+so the method's actual accuracy, by source and slot type, becomes visible
+as q1 runs rather than assumed from a different project's numbers.
+
 ---
 
 ## 8. The investigation process
@@ -1041,6 +1086,14 @@ For q1 specifically, Stage 1 must settle: which layers are in scope;
 whether the aggregate is annual capex or total mobilization; how
 double-counting is detected (§5); whether a vendor-financed dollar counts
 once or twice.
+
+**First-pass depth: spine, then wedge (Q4, ruled 2026-08-05).** The first
+Stage-2/3 run over the (now twenty-layer) skeleton goes thin across every
+layer first — a spine, aimed only at seeing the shape of the gap map, not
+at publishable figures — and only then goes deep on whichever two layers
+the spine shows as darkest. The alternative (picking two or three layers
+to source properly up front) was rejected because that choice would be a
+guess; the spine makes it evidence-driven instead.
 
 **This has now happened for real.** q1 and q2's skeletons ran exactly this
 review to convergence — see §7.9 for the run and its verdicts, and §4.1 /
@@ -1437,12 +1490,22 @@ breaking)."* Unresolved there; inherited unresolved here.
 merged anyway on all three scopes. Both are defensible. The choice should
 be explicit rather than emergent.
 
-### 13.4 Where the corpus lives
+### 13.4 Where the corpus lives — resolved (Q19, ruled 2026-08-05)
 
-the citation record holds 3,240 citations and 5,611 captures relevant to q1. Options:
-q1 reads from the citation record as an upstream record · the relevant slice migrates
-to `theprojection-corpus` · the citation record becomes a fourth kestrel instance.
-**Not resolved here.**
+**Correction to the framing this section carried until now:** the citation
+record's 3,240 citations and 5,611 captures are **not** q1's raw material
+— only **56 staged records** (§9.3) are tagged to the buildout. The rest
+of that store belongs to other, unrelated projects (mh-tech-record,
+the-evidence-gap); treating the whole store as buildout material was an
+assumption, not a fact, and it doesn't hold.
+
+**Ruling:** q1 does neither of the two options that treat the whole store
+as buildout-relevant (reading the full store as a live upstream, or
+migrating the full store). Instead, **ingest and peel off only the
+buildout-tagged slice** — the 56 staged records plus whatever underlying
+citations/captures actually support them — into `theprojection-corpus`.
+The rest of the citation record's store is out of scope for q1 and is not
+touched.
 
 ---
 
@@ -1454,7 +1517,7 @@ to `theprojection-corpus` · the citation record becomes a fourth kestrel instan
 | **2** | `tools/claims.py` — build, validate, supersede | re-emits today's `claims.json` byte-identically |
 | **3** | Port `reliability.py` + `schema_check.py` into the engine | reproduces the knowledge-graph project's recorded doc-01 numbers exactly |
 | **4** | Run q1 Stage 1 — the skeleton, adversarially reviewed | the accounting identity survives a Red pass **before** sourcing |
-| **5** | Run q1 Stages 2–5 — capture the 56 staged records, extract dual-pass, derive, gap map | gap map exists and names its dark layers |
+| **5** | Run q1 Stages 2–5 — ingest the buildout-tagged slice (§13.4), extract via targeted slot extraction with cross-model checking (§7.10), derive, gap map | gap map exists and names its dark layers |
 | **6** | `/color-team` skill, lenses as single-turn primitives | a layer's hypothesis set converges by the §7.8 bar |
 | **7** | Citation renderer + hover cards | live claims render with class + status visible |
 | **8** | Maintenance job (L4) | a run with no structural change emits an empty diff and does not fail |
@@ -1488,11 +1551,17 @@ currently the literal home of this design material. The inter-project
 handoff pattern survives for the ungoverned corpus repos; only kestrel's
 own hopper goes.
 
-**Blocking the q1 run:** the layer list · first-pass depth · whether
-extraction convergence is adopted now or retrofitted · where the corpus
-lives. (**The bottom boundary is no longer on this list** — R-16/R-17,
-§4.1, resolved it: it was never a fixed line to rule on, only a filter
-parameter, named and versioned.)
+**Nothing is blocking the q1 run anymore, as of 2026-08-05.** The four
+items that were — the layer list, first-pass depth, extraction
+methodology, and where the corpus lives — are all ruled: the layer list
+ratified in full (§4, Q1); first-pass depth set as spine-then-wedge (§8.1,
+Q4); extraction set as targeted slot-based with cross-model checking,
+validated empirically as q1 runs rather than decided in advance (§7.10,
+Q5); the corpus resolved as ingest-the-buildout-slice-only into
+`theprojection-corpus`, correcting an earlier assumption that the whole
+citation-record store was buildout material (§13.4, Q19). (**The bottom
+boundary was resolved earlier** — R-16/R-17, §4.1: it was never a fixed
+line to rule on, only a filter parameter, named and versioned.)
 
 ---
 

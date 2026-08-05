@@ -13,11 +13,13 @@ touches:   ROADMAP/RESEARCH.md (the companion design of record — every
            library/skills/ (Group D),
            INBOX/2026-08-01-theprojection-data-reorganize-around-the-buildout-model.md,
            INBOX/2026-07-31-kestrel-session-three-instances-one-species.md
-done-when: Ben has ruled on at least the four blocking questions in §8, so
-           the q1 decomposition run can start. The remaining eleven can be
-           answered as they come up — this document says which is which.
-           Ratification (or rejection with reasons) of ROADMAP/RESEARCH.md
-           closes it fully.
+done-when: ✅ MET 2026-08-05 — Ben has ruled on all four blocking
+           questions in §8 (Q1/Q4/Q5/Q19; Q2 was ruled earlier, 2026-08-03)
+           and the rulings are folded into ROADMAP/RESEARCH.md. The q1
+           decomposition run is unblocked. The remaining eleven questions
+           are still open and answered as they come up — this document
+           still says which is which; it just no longer gates the start
+           of work.
 artifact:  ROADMAP/RESEARCH.md — read as evidence of intent, not as
            something to execute. It is marked PROPOSED and nothing in it
            is built.
@@ -186,7 +188,7 @@ reappears.
 
 ## 3. Group A — scope of the model
 
-### Q1. Ratify the twenty layers, or cut them back
+### Q1. Ratify the twenty layers, or cut them back — ✅ DECIDED 2026-08-05: ratify all twenty
 
 `RESEARCH.md` §3.1 proposes a twenty-layer stack. Ten are Ben's own
 ordering; **ten are the agent's proposed additions under his "plus whatever
@@ -222,9 +224,13 @@ and "we didn't look."
 
 **Blocks:** the q1 run's skeleton (Stage 1). ⛔ **Blocking.**
 
+**Ruled 2026-08-05:** Ben took option (a), not the agent's recommended
+(b) — all twenty layers are ratified for real sourcing, none held as
+named-but-empty. Folded into `RESEARCH.md` §4.
+
 ---
 
-### Q2. Where does the bottom boundary sit?
+### Q2. Where does the bottom boundary sit? — ✅ DECIDED 2026-08-03 (R-16/R-17): dissolved, not answered from the options below
 
 "Minerals mined" implies mining companies, ore markets, and Chinese
 refining capacity. That is a real domain with its own sources, its own
@@ -246,6 +252,15 @@ argument — copper and transformer steel are precisely the L04 story — with
 a fraction of the surface.
 
 **Blocks:** the q1 skeleton. ⛔ **Blocking.**
+
+**Ruled 2026-08-03, ahead of this doc's own Q1/Q4/Q5/Q19 rulings:** none
+of options (a)–(c). Ben rejected the premise that "inside/outside" is a
+line to rule on at all — "membership is just a filter that classifies
+companies into a system or group" (R-16), not a fixed boundary. A
+boundary is a named, versioned filter applied on top of a classification-
+free base record, never baked into the schema — so L01 is collected at
+full granularity and a *filter* decides which of it counts toward a given
+cut's totals. Full ruling in `RESEARCH.md` §4.1.
 
 ---
 
@@ -273,7 +288,7 @@ decomposition pass. 📋 Non-blocking.
 
 ---
 
-### Q4. How deep does the first q1 pass go?
+### Q4. How deep does the first q1 pass go? — ✅ DECIDED 2026-08-05: hybrid (c) — spine, then wedge the two darkest
 
 The decomposition can be run as a **spine** (one pass over all layers, thin
 sourcing, aimed purely at seeing the shape of the gap) or as a **wedge**
@@ -294,11 +309,14 @@ choice should be made from evidence rather than guessed at in advance.
 **Blocks:** the q1 run's budget. ⛔ **Blocking** (it decides how the run
 is scoped).
 
+**Ruled 2026-08-05:** the agent's recommendation, ratified as-is. Folded
+into `RESEARCH.md` §8.1.
+
 ---
 
 ## 4. Group B — method and rigour
 
-### Q5. Adopt the dual-pass extraction cycle? — ✅ MECHANISM FOUND, still a decision
+### Q5. Adopt the dual-pass extraction cycle? — ✅ DECIDED 2026-08-05: not as-built — see below
 
 **Superseded by evidence, 2026-08-02.** The mechanism exists, running, in
 the knowledge-graph project. §2.2's *k*-symmetric-extractors proposal was wrong in
@@ -333,6 +351,24 @@ wrong thing and produce a falsely reassuring number.
 
 **Blocks:** shapes Stage 2/3 design. Cheap now, expensive to retrofit
 across a corpus. ⛔ **Blocking-ish** — see §8.
+
+**Ruled 2026-08-05 — neither option (a)–(d) as originally framed.** The
+mechanism itself doesn't transfer cleanly: it was built to catch
+disagreement between readers over what an ambiguous passage means, and
+buildout sources (10-Ks, filings, press releases) are mostly plainly
+stated, so that specific risk mostly isn't present here. What q1's Stage 3
+actually does is **targeted slot extraction** (named suppliers, named
+customers, money moved — amount/direction/contract — dates, capacity
+figures), not open atom extraction, and the real remaining risk is a
+single extractor misreading a plain figure, not two extractors
+disagreeing on meaning. Cross-checked with 2+ genuinely distinct models
+(sonnet-class minimum, haiku where a slot is mechanical enough, real
+cross-family checks — Gemini/GPT, not a second Claude session — where the
+stakes justify it), reliability logged per information-type rather than
+pooled corpus-wide, and validated empirically against real q1 data (~1-2
+hours once that data exists) rather than decided from the knowledge-graph
+project's numbers in advance. Full detail and rationale in `RESEARCH.md`
+§7.10.
 
 ---
 
@@ -739,12 +775,15 @@ two stores always drift.
 
 ---
 
-### Q19. Where does the buildout corpus live?
+### Q19. Where does the buildout corpus live? — ✅ DECIDED 2026-08-05: ingest the buildout-tagged slice only, into `theprojection-corpus`
 
 the citation record holds **3,240 citations, 5,611 captures**, and
 **56 staged buildout records** with real sourced figures — all
-`track_b_check: pending`. That is q1's raw material and it is in a repo
-kestrel does not own.
+`track_b_check: pending`. **Correction, 2026-08-05: only that 56-record
+slice is q1's raw material** — the other ~3,184 citations/captures belong
+to unrelated projects (mh-tech-record, the-evidence-gap) in the same
+store. Framing the whole 3,240/5,611 store as "q1's raw material" below
+was an unverified assumption, not a fact, and Ben caught it directly.
 
 **Options:** (a) q1 reads the citation record as an upstream record, citing into it ·
 (b) the buildout slice migrates into `theprojection-data` · (c) the citation record
@@ -759,6 +798,14 @@ has staging→merge, lint gates, and a pre-commit hook that mirror kestrel's
 own disciplines.
 
 **Blocks:** where Stage 2 writes. ⛔ **Blocking** for the q1 run.
+
+**Ruled 2026-08-05 — none of (a)–(d) as originally framed**, because all
+four treated the whole store as buildout-relevant. The actual ruling:
+**ingest and peel off only the 56-record buildout-tagged slice** (plus
+whatever citations/captures actually support those records) into
+`theprojection-corpus` — not a live citation-into relationship with the
+whole store, not a wholesale migration, and no restructuring of the
+unrelated ~3,184 records. Full detail in `RESEARCH.md` §13.4.
 
 ---
 
@@ -913,24 +960,30 @@ it resolves, and because nobody appears to have noticed.
 
 ---
 
-## 8. The minimum set to unblock the q1 run
+## 8. The minimum set to unblock the q1 run — ✅ ALL RULED, 2026-08-05
 
-**Four rulings and the decomposition can start.** Everything else can wait
-for the moment it actually comes up.
+**All four are now decided and the decomposition can start.** None of them
+landed exactly on the agent's original recommendation — see each
+question's own ruling note above, and `RESEARCH.md` for full detail:
 
-1. **Q1 — the layer list.** Recommendation: ratify all twenty, but as a
-   v1 subset with the rest **named-but-empty** so they show as dark in the
-   gap map rather than absent.
-2. **Q2 — the bottom boundary.** Recommendation: bounded — minerals only
-   where a named constraint reaches the stack.
-3. **Q4 — first-pass depth.** Recommendation: spine first to locate the
-   darkness, then wedge into the two darkest layers.
-4. **Q5 — extraction convergence.** Recommendation: adopt selectively, at
-   *k*=3, on high-claim-density sources only. Cheap to add now, expensive
-   to retrofit across a corpus.
+1. **Q1 — the layer list.** Ruled: **all twenty ratified**, none held as
+   named-but-empty (RESEARCH.md §4).
+2. **Q2 — the bottom boundary.** Ruled earlier, 2026-08-03: dissolved as a
+   line to draw — it's a versioned filter over a classification-free base
+   record, not a fixed boundary (RESEARCH.md §4.1, R-16/R-17).
+3. **Q4 — first-pass depth.** Ruled: spine first to locate the darkness,
+   then wedge into the two darkest layers — the agent's recommendation,
+   as-is (RESEARCH.md §8.1).
+4. **Q5 — extraction convergence.** Ruled: **not** the knowledge-graph
+   project's dual-pass mechanism as originally scoped — targeted
+   slot-based extraction (named suppliers/customers, money moved,
+   dates, capacity), cross-model checked, reliability logged per
+   information-type, validated empirically against real q1 data rather
+   than decided in advance (RESEARCH.md §7.10).
 
 The remaining eleven are real questions and none of them should be
-answered by drift — but none of them stops the first pass.
+answered by drift — but none of them stops the first pass, which is now
+unblocked.
 
 ---
 
@@ -949,12 +1002,22 @@ Where the answers land:
 | --- | --- |
 | Engine/method (Q1–Q9, Q16–Q18, Q20–Q23) | `ROADMAP/RESEARCH.md` + `ROADMAP/DESIGN.md` §10 |
 | Project content (Q10–Q12) | `theprojection-corpus`'s `attention/` files and `AGENTS.md`, carried by a session in that repo |
-| Registry/ontology (Q19, Q24, Q25, and `RESEARCH.md` §6.0's three asks) | ⛔ **the governance layer** — governed repos take no INBOX drops |
+| Registry/ontology (Q24, Q25, and `RESEARCH.md` §6.0's three asks) | ⛔ **the governance layer** — governed repos take no INBOX drops |
+
+**Q19 turned out not to be a registry/ontology question** — it was where
+q1's own raw material lives, not what the schema is, so it landed
+directly in `RESEARCH.md` §13.4 rather than routing to the governance
+layer. (The genuinely schema-shaped ask — Claim/Citation/Interpretation
+node kinds — was filed separately, 2026-08-05, in cloud-governor's own
+`INBOX/`, since lifeos-registry is governed.)
 
 **Companion documents:** `ROADMAP/RESEARCH.md` is the design of record;
 **`ROADMAP/INVENTORY.md` is the register of what already exists** across
 fourteen repos — read it before designing anything in this space.
 
-**Nothing was built or run for this.** Both ROADMAP documents are marked
-PROPOSED/REFERENCE; no project file has been touched; no file in any
-crawled repo was modified.
+**As of 2026-08-05, this is no longer purely descriptive.** Four blocking
+rulings (Q1/Q4/Q5/Q19, plus Q2 slightly earlier) are now folded into
+`RESEARCH.md` §§4/7.10/8.1/13.4/15 — that document has moved past
+PROPOSED for the ratified sections. No file outside kestrel was touched;
+`theprojection-corpus` still holds nothing from this decision (the Q19
+ingest itself is not yet run).
