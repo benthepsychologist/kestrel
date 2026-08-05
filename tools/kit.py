@@ -334,8 +334,32 @@ def build_tokens(*, kind: str, target_root: Path, manifest, entries: list,
                 tokens["site_sibling"] = str(_resolve_path(entry["site"], instances_path.parent))
             for k, v in (entry.get("render") or {}).items():
                 tokens[str(k)] = str(v)
+        tokens["adapter_status"] = adapter_status_token(manifest, target_root)
 
     return tokens
+
+
+def adapter_status_token(manifest, target_root: Path) -> str:
+    """Whether this instance's declared publish adapter actually exists on
+    disk, checked fresh at every render — never hardcoded prose. A kit
+    template that asserts a fixed "operational since <date>" string goes
+    stale the moment it's wrong for a DIFFERENT instance of the same kind
+    (found 2026-08-01, INBOX: therapybulletin's rendered docs claimed an
+    adapter was unbuilt when it had shipped days earlier — a hand patch
+    fixed that one instance without fixing the template, so the same
+    template would tell the SAME lie to the next registry instance
+    instantiated before its own adapter exists). No adapter_rel declared
+    at all is a distinct, equally real state from declared-but-missing —
+    both are reported honestly rather than collapsed into one guess."""
+    adapter_rel = (manifest.get("outputs") or {}).get("adapter")
+    if not adapter_rel:
+        return ("**Not declared** — this repo's `kestrel.yaml` has no "
+                "`outputs.adapter` set yet; `/publish` has nothing to load.")
+    if (target_root / adapter_rel).is_file():
+        return f"**Operational** — `{adapter_rel}` exists in this repo."
+    return (f"**Not yet built** — `{adapter_rel}` is declared in this "
+            "repo's `kestrel.yaml` but doesn't exist yet; `/publish` is a "
+            "stub until it lands.")
 
 
 def _check_no_relpath_collisions(plan: list):

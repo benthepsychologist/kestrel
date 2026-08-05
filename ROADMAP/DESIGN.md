@@ -487,6 +487,32 @@ gets its own plan when Ben calls it.
 
 ## §10 Open ledger
 
+- ✅ **Kit templates no longer assert a fixed adapter-build status —
+  detected fresh at every render instead.** Closes
+  `INBOX/2026-08-01-therapybulletin-data-kit-templates-stale-and-cross-
+  contaminated.md` fully (the site-agentdocs half of that brief — one
+  shared `site/` template rendering theprojection's content paths into a
+  registry-shaped site — was already fixed 2026-08-04, commit `57a6078`:
+  `agentdocs/site-attention/` vs `agentdocs/site-registry/`, selected by
+  the sibling data instance's real `kind:`). The remaining half, fixed
+  2026-08-05: `library/skills/registry/publish/SKILL.md.tmpl` and
+  `library/agentdocs/registry/CLAUDE.md.tmpl` used to hardcode
+  "**operational since 2026-07-31**" prose — true for therapybulletin
+  the instance this was patched around, but a landmine for the next
+  `registry`-kind instance created before its own adapter exists (it
+  would've inherited the same false claim therapybulletin once did, one
+  level down). `tools/kit.py`'s `build_tokens()` now computes a new
+  `{{adapter_status}}` token per render — checks whether the target's own
+  `kestrel.yaml` `outputs.adapter` path actually exists on disk (three
+  honest states: operational / declared-but-missing / not declared at
+  all) — and both templates render it instead of asserting a fixed
+  string. Verified: dry-rendered against the real therapybulletin-data
+  and theprojection-corpus manifests, correctly reports "Operational" for
+  both (both adapters exist today); no regression for `attention`-kind
+  targets, which compute but don't reference the token. `library/VERSION`
+  bumped to `2026-08-05.3`. Not yet propagated to the live fleet — that's
+  a `kit.py sync --apply` pass, still owed (see the fleet-drift note
+  elsewhere in this ledger/STATUS.md).
 - ✅ **`collect.py` source loop fanned out across collectors** — shipped
   2026-08-05. The runner was a plain sequential `for source_id in
   source_ids` loop (root cause of the two collect-py-timing INBOX items,

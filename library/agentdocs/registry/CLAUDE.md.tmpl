@@ -12,10 +12,7 @@ manifest (`kind: registry`).
 
 **The loop:** `/tend` (sweep sources → stage candidates) → `/curate`
 (candidates → records, operator-confirmed, citation-required) →
-`/verify` (scheduled re-verification) → `/publish` (**operational since
-2026-07-31** — `publish/adapter.py` in this repo; the kit template still
-says "stub until the adapter lands", which is stale for this instance —
-see the local override note in `.claude/skills/publish/SKILL.md`).
+`/verify` (scheduled re-verification) → `/publish` ({{adapter_status}}).
 Skills live in `.claude/skills/` — rendered kit copies; canonical
 versions live in the engine's `library/` (edit there, then `/sync-kits`).
 
