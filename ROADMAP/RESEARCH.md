@@ -432,7 +432,7 @@ that routes work: a low-`extraction_confidence` item goes to the
 adjudicator regardless of how good the source is.
 
 ⚠️ **The live shape has none of this.** `build_claims()` in
-`theprojection-data/publish/adapter.py:376` derives confidence directly
+`theprojection-corpus/publish/adapter.py:376` derives confidence directly
 from source reliability:
 
 ```python
@@ -1131,7 +1131,7 @@ check for a deterministic version before writing a prompt.
 | Diff → changelog | `tools/record_diff.py` | L3 |
 | Publish core | `tools/publish/core.py` | L3 |
 | Page-diff / snapshots | `tools/tend.py` | L3 |
-| Claim builder | `theprojection-data/publish/adapter.py:376` | L3 — instance code, 753 claims |
+| Claim builder | `theprojection-corpus/publish/adapter.py:376` | L3 — instance code, 753 claims |
 | Kit system | `tools/kit.py` + `library/` | L3 |
 
 **kestrel's `tools/` contains no claim, citation, or receipt rendering at
@@ -1305,7 +1305,7 @@ be explicit rather than emergent.
 
 the citation record holds 3,240 citations and 5,611 captures relevant to q1. Options:
 q1 reads from the citation record as an upstream record · the relevant slice migrates
-to `theprojection-data` · the citation record becomes a fourth kestrel instance.
+to `theprojection-corpus` · the citation record becomes a fourth kestrel instance.
 **Not resolved here.**
 
 ---

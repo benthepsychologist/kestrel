@@ -59,7 +59,7 @@ the kestrel checkout at all. One brand-new target repo per invocation.
    Location: `publish/adapter.py` inside the **data instance repo** (the
    `data instance path` input — create it first via `/instantiate-data` if
    it doesn't exist yet, see step 5). Shape it after
-   `theprojection-data/publish/adapter.py` (the fullest reference — read it
+   `theprojection-corpus/publish/adapter.py` (the fullest reference — read it
    before writing this) and `tools/publish/core.py` (the interface it must
    satisfy):
 

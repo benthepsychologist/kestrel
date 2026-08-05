@@ -10,11 +10,11 @@
 # see tools/kit.py's `find_site_backref()`).
 #
 # Paths are absolute, matching the `outputs.site:` convention already used
-# in theprojection-data/kestrel.yaml and therapybulletin-data/kestrel.yaml.
+# in theprojection-corpus/kestrel.yaml and therapybulletin-data/kestrel.yaml.
 # Relative paths are also accepted (resolved against this file's own
 # directory) — useful for a fixture registry in tests (kit.py --instances).
 instances:
-  - path: /workspace/theprojection-data
+  - path: /workspace/theprojection-corpus  # renamed from theprojection-data 2026-08-05
     kind: attention
     site: /workspace/theprojection-site
     render:

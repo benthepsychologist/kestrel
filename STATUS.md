@@ -43,13 +43,20 @@ ontologies and five research methodologies already exist across the fleet.
   library + agentdocs + scaffolds in `library/`, `tools/kit.py`
   render/install/sync with no-clobber conflict discipline, four
   meta-skills, `instances.yaml` fleet registry. **Library is currently
-  at `2026-08-04.2`; the fleet is NOT clean** — `python3 tools/kit.py
-  sync` (2026-08-05): `theprojection-data` is **dirty** (`AGENTS.md`,
+  at `2026-08-05.1`; the fleet is NOT clean** — `python3 tools/kit.py
+  sync` (2026-08-05): `theprojection-corpus` is **dirty** (`AGENTS.md`,
   `CLAUDE.md` locally drifted from the stamp), the other three targets
   are **behind** at `2026-08-04.1`. Needs an `install-kit --adopt/
   --discard` pass on the dirty target before a `sync --apply` can bring
   the rest current — no kestrel session has run either yet.
-- **Two instances in production:** `theprojection-data` (attention —
+- **`theprojection-data` renamed to `theprojection-corpus`** (2026-08-05,
+  Ben) — GitHub repo, local checkout (now `/workspace/theprojection-corpus`),
+  and git remote all confirmed moved; `instances.yaml`'s `path:` was
+  updated the same day after `kit.py sync` found the old path **MISSING**
+  (a real break, not cosmetic — the rename had landed on disk before the
+  registry caught up). One of the two `-data`→`-corpus` renames tracked
+  below; `therapybulletin-data` hasn't moved yet.
+- **Two instances in production:** `theprojection-corpus` (attention —
   feeds theprojection.org, adapter working) and `therapybulletin-data`
   (registry). **The therapybulletin adapter is built and publishing** —
   `therapybulletin-data/publish/adapter.py`, committed 2026-07-31, 16
@@ -59,7 +66,7 @@ ontologies and five research methodologies already exist across the fleet.
 - **Adapters relocated out of the engine entirely** (2026-07-31 evening,
   Ben: "kestrel is going generic... it shouldn't have site specific
   adapters in it anyway"): `theprojection`'s adapter now lives at
-  `theprojection-data/publish/adapter.py`, declared via that repo's own
+  `theprojection-corpus/publish/adapter.py`, declared via that repo's own
   `kestrel.yaml` `outputs.adapter` and loaded by the new generic
   `tools/publish.py` (replaces `tools/publish_projection.py`). kestrel's
   checkout holds zero per-site Python now. Regression gate re-run,
@@ -73,15 +80,18 @@ ontologies and five research methodologies already exist across the fleet.
   `KESTREL_INSTANCE=… python3 …/tools/X.py`), a store adapter on the input
   side, and vendored/version-pinned registered kinds. Three of six
   prerequisites already done; see the open-questions INBOX item, Q21.
-- 📋 **`-data` → `-corpus` rename** across the fleet (Q22), and the
-  retirement of kestrel's own `INBOX/` in favour of GitHub issues +
-  the governance layer (Q23) — the latter blocked on transferring its six open
-  items.
+- 📋 **`-data` → `-corpus` rename** across the fleet (Q22) — **half
+  done**: `theprojection-data` → `theprojection-corpus` landed
+  2026-08-05 (GitHub + local checkout + `instances.yaml`, see above);
+  `therapybulletin-data` hasn't moved. Also open: retirement of
+  kestrel's own `INBOX/` in favour of GitHub issues + the governance
+  layer (Q23) — blocked on transferring its six open items.
 - 📋 `rss.py` `watch["feeds"]` input — manifest-declared feeds currently
   go through an inline path in `tend.py`.
 - 📋 Public receipt export — bundle links on theprojection.org point
-  into the data repo (theprojection-data is public on GitHub as of
-  2026-07-31, so this may already be resolvable — worth re-checking).
+  into the data repo (theprojection-corpus was public on GitHub as
+  `theprojection-data` as of 2026-07-31; visibility not re-verified
+  since the rename — worth re-checking).
 
 ## Keeping this current
 

@@ -7,9 +7,9 @@ diff→changelog engine (`tools/record_diff.py`), the publish **core**
 2026-07-31), and the **kit library** (`library/` — canonical skills,
 agentdocs, and scaffolds; `tools/kit.py` renders, installs, and syncs
 them). **No project data lives here** — Ben's attention map and artifacts
-are in `/workspace/theprojection-data`; the compliance registry is in
-`/workspace/therapybulletin-data`. (Both are slated to become
-`*-corpus`.)
+are in `/workspace/theprojection-corpus` (renamed from `theprojection-data`
+2026-08-05); the compliance registry is in `/workspace/therapybulletin-data`
+(still slated for the same `*-corpus` rename).
 
 **The direction, decided 2026-08-02:** the agent lives in the *project* and
 **calls** kestrel. kestrel is the package, process, and skill tree a
@@ -31,9 +31,9 @@ kestrel adds on top; §10 of the inventory is the only warranted build
 surface.
 
 **Working on instance #1's content (digests, threads, steering, /daily)?
-Wrong repo** — those sessions run in `/workspace/theprojection-data`,
+Wrong repo** — those sessions run in `/workspace/theprojection-corpus`,
 where the skills and instance docs live. Engine tools are invoked from
-there as `KESTREL_INSTANCE=/workspace/theprojection-data python3
+there as `KESTREL_INSTANCE=/workspace/theprojection-corpus python3
 /workspace/kestrel/tools/<tool>.py`.
 
 **Editing a skill an instance uses? Also wrong place to do it directly** —

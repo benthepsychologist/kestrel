@@ -19,7 +19,7 @@ import yaml
 
 # Instance root (engine/instance split phase 6, ROADMAP/DESIGN.md §1): the
 # data this module reads — attention/, artifacts/, templates/ — lives in an
-# INSTANCE repo (theprojection-data), located via KESTREL_INSTANCE. The
+# INSTANCE repo (theprojection-corpus), located via KESTREL_INSTANCE. The
 # engine-repo fallback keeps a pre-split checkout working unchanged.
 # readouts.py and the theprojection publish adapter import this ROOT, so
 # this one line re-roots the whole instance-reading stack.
@@ -323,7 +323,7 @@ def parse_digest(path, day, lens):
             # context_note}, or None. DESIGN.md Part 2 §8.
             "interpretation": interp,
             # The /interpretation/<id>/ page slug, computed ONCE here so
-            # Python (publish/adapter.py, theprojection-data) and the Hugo template read the
+            # Python (publish/adapter.py, theprojection-corpus) and the Hugo template read the
             # same value rather than each re-deriving it and risking drift.
             "interpretation_id": f"{day}--{slugify(title[:50])}" if interp else None,
         })

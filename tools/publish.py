@@ -11,7 +11,7 @@ manifest, entity-leak protection). Same CLI surface as the old per-site
 shim (tools/publish_projection.py, retired the same day this replaced it).
 
 Usage:
-  KESTREL_INSTANCE=/workspace/theprojection-data python3 tools/publish.py [--site-dir PATH] [--push] [--dry-run]
+  KESTREL_INSTANCE=/workspace/theprojection-corpus python3 tools/publish.py [--site-dir PATH] [--push] [--dry-run]
 """
 import argparse
 import importlib.util
@@ -27,7 +27,7 @@ if TOOLS_DIR not in sys.path:
 INSTANCE = os.environ.get("KESTREL_INSTANCE")
 if not INSTANCE:
     sys.exit("KESTREL_INSTANCE not set — publish needs an instance repo to publish for, e.g.\n"
-              "  KESTREL_INSTANCE=/workspace/theprojection-data python3 tools/publish.py --push")
+              "  KESTREL_INSTANCE=/workspace/theprojection-corpus python3 tools/publish.py --push")
 
 # Load the INSTANCE's own .env (site dir, deploy hook — adapter config, not
 # engine config; AGENTS.md discipline 2). setdefault so a real exported env

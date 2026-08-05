@@ -37,8 +37,9 @@ tools/kit.py sync` reports the whole fleet's drift state.
 
 Current instances (see `instances.yaml`):
 
-- **theprojection-data** (`kind: attention`) — a personal news/attention
-  map feeding the site theprojection.org via its own `publish/adapter.py`
+- **theprojection-corpus** (`kind: attention`, renamed from
+  `theprojection-data` 2026-08-05) — a personal news/attention map
+  feeding the site theprojection.org via its own `publish/adapter.py`
   (declared in its `kestrel.yaml`, loaded by kestrel's `tools/publish.py`).
 - **therapybulletin-data** (`kind: registry`) — a compliance-obligation
   registry (the Therapy Bulletin site) with an append-only changelog,

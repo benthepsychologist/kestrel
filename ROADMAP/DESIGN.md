@@ -23,9 +23,9 @@ Ben's instance data (`attention/`, `artifacts/`, `sources/`,
 deepens it. **That mixing is now resolved** — the split executed
 2026-07-31 (§9, and STATUS.md), and none of those instance-data
 directories exist in this checkout anymore; they moved to
-`theprojection-data`. Left as originally written since it's the doc's own
-opening motivation, not a live status claim — see STATUS.md for current
-state.
+`theprojection-corpus` (renamed 2026-08-05, formerly `theprojection-data`).
+Left as originally written since it's the doc's own opening motivation,
+not a live status claim — see STATUS.md for current state.
 
 ---
 
