@@ -26,10 +26,10 @@ strict (single-country substring matching would false-positive constantly:
 a "China" bucket would match nearly every AI thread). A GDELT bucket that
 matches no thread and clears a domain-count + severity bar becomes a
 standalone `source: gdelt` candidate, with a readable headline built from
-country names (a small hardcoded ISO-3166-alpha-3-ish map -- no
-`pycountry` in this environment) + the CAMEO root-code label, NOT the raw
-URL-slug proxy (which is often garbled -- see gdelt_dedup.py's own
-header).
+country names (a full ISO 3166-1 alpha-3 -> common-name map -- no
+`pycountry` in this environment, stdlib only) + the CAMEO root-code
+label, NOT the raw URL-slug proxy (which is often garbled -- see
+gdelt_dedup.py's own header).
 
 `domestic-generic` GDELT buckets are EXCLUDED entirely from candidate
 generation -- they are real category aggregations ("US + Fight"), not
@@ -43,48 +43,202 @@ import argparse, json, os, re, sys
 import yaml
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from world_news import load_day, cluster, rank as rank_rss, _keywords
 from gdelt_dedup import (fetch_articles, domain_of, detect_syndicates,
                           cluster_stories, rank as rank_gdelt, CAMEO_ROOT)
+from collectors.base import log_skip
 
 ROOT = os.environ.get("KESTREL_INSTANCE") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "attention/world-news.yaml")
 THREADS = os.path.join(ROOT, "attention/threads.yaml")
 
-# Small, deliberately partial CAMEO/ISO-3166-alpha-3-ish country-code map --
-# covers what actually showed up in the top of this window's GDELT buckets.
-# Falls back to the raw 3-letter code (honest) when a code isn't in here,
-# rather than guessing.
+# Full ISO 3166-1 alpha-3 -> common-name map (stdlib only -- no
+# `pycountry` in this environment, matching tools/thumbnails.py's own "No
+# dependency beyond stdlib" convention; this is a well-known static list,
+# not something that needs a live lookup). Common/short names throughout
+# (e.g. "South Korea", not the formal "Republic of Korea"), matching this
+# file's existing convention. Replaces a 36-entry partial table (found
+# 2026-08-01: an unmapped code -- e.g. PSE, MAR -- fell through to the raw
+# 3-letter code, which match_country_pair() below can never match against
+# thread prose, so the item silently rotted as a permanent "candidate").
 COUNTRY_NAME = {
-    "USA": "United States", "RUS": "Russia", "UKR": "Ukraine", "IRN": "Iran",
-    "GBR": "United Kingdom", "ISR": "Israel", "CHN": "China", "FRA": "France",
-    "ESP": "Spain", "ITA": "Italy", "IND": "India", "CAN": "Canada",
-    "AUS": "Australia", "POL": "Poland", "SAU": "Saudi Arabia",
-    "DEU": "Germany", "IDN": "Indonesia", "GRC": "Greece", "JPN": "Japan",
-    "JOR": "Jordan", "IRQ": "Iraq", "KWT": "Kuwait", "EGY": "Egypt",
-    "KOR": "South Korea", "PRK": "North Korea", "TWN": "Taiwan",
-    "MEX": "Mexico", "BRA": "Brazil", "TUR": "Turkey", "SYR": "Syria",
-    "LBN": "Lebanon", "YEM": "Yemen", "ARE": "United Arab Emirates",
-    "QAT": "Qatar", "PAK": "Pakistan", "AFG": "Afghanistan",
+    # --- Africa ---
+    "DZA": "Algeria", "AGO": "Angola", "BEN": "Benin", "BWA": "Botswana",
+    "BFA": "Burkina Faso", "BDI": "Burundi", "CPV": "Cabo Verde",
+    "CMR": "Cameroon", "CAF": "Central African Republic", "TCD": "Chad",
+    "COM": "Comoros", "COG": "Congo", "COD": "DR Congo",
+    "CIV": "Ivory Coast", "DJI": "Djibouti", "EGY": "Egypt",
+    "GNQ": "Equatorial Guinea", "ERI": "Eritrea", "SWZ": "Eswatini",
+    "ETH": "Ethiopia", "GAB": "Gabon", "GMB": "Gambia", "GHA": "Ghana",
+    "GIN": "Guinea", "GNB": "Guinea-Bissau", "KEN": "Kenya",
+    "LSO": "Lesotho", "LBR": "Liberia", "LBY": "Libya",
+    "MDG": "Madagascar", "MWI": "Malawi", "MLI": "Mali",
+    "MRT": "Mauritania", "MUS": "Mauritius", "MAR": "Morocco",
+    "MOZ": "Mozambique", "NAM": "Namibia", "NER": "Niger",
+    "NGA": "Nigeria", "RWA": "Rwanda", "STP": "Sao Tome and Principe",
+    "SEN": "Senegal", "SYC": "Seychelles", "SLE": "Sierra Leone",
+    "SOM": "Somalia", "ZAF": "South Africa", "SSD": "South Sudan",
+    "SDN": "Sudan", "TZA": "Tanzania", "TGO": "Togo", "TUN": "Tunisia",
+    "UGA": "Uganda", "ZMB": "Zambia", "ZWE": "Zimbabwe",
+    "ESH": "Western Sahara",
+    # --- Americas ---
+    "ATG": "Antigua and Barbuda", "ARG": "Argentina", "BHS": "Bahamas",
+    "BRB": "Barbados", "BLZ": "Belize", "BOL": "Bolivia",
+    "BRA": "Brazil", "CAN": "Canada", "CHL": "Chile",
+    "COL": "Colombia", "CRI": "Costa Rica", "CUB": "Cuba",
+    "DMA": "Dominica", "DOM": "Dominican Republic", "ECU": "Ecuador",
+    "SLV": "El Salvador", "GRD": "Grenada", "GTM": "Guatemala",
+    "GUY": "Guyana", "HTI": "Haiti", "HND": "Honduras",
+    "JAM": "Jamaica", "MEX": "Mexico", "NIC": "Nicaragua",
+    "PAN": "Panama", "PRY": "Paraguay", "PER": "Peru",
+    "KNA": "Saint Kitts and Nevis", "LCA": "Saint Lucia",
+    "VCT": "Saint Vincent and the Grenadines", "SUR": "Suriname",
+    "TTO": "Trinidad and Tobago", "USA": "United States",
+    "URY": "Uruguay", "VEN": "Venezuela",
+    # -- Americas: territories --
+    "AIA": "Anguilla", "ABW": "Aruba", "BMU": "Bermuda",
+    "BES": "Bonaire, Sint Eustatius and Saba",
+    "VGB": "British Virgin Islands", "CYM": "Cayman Islands",
+    "CUW": "Curacao", "FLK": "Falkland Islands", "GUF": "French Guiana",
+    "GRL": "Greenland", "GLP": "Guadeloupe", "MTQ": "Martinique",
+    "MSR": "Montserrat", "PRI": "Puerto Rico", "BLM": "Saint Barthelemy",
+    "MAF": "Saint Martin", "SPM": "Saint Pierre and Miquelon",
+    "SXM": "Sint Maarten", "TCA": "Turks and Caicos Islands",
+    "VIR": "U.S. Virgin Islands",
+    # --- Asia ---
+    "AFG": "Afghanistan", "ARM": "Armenia", "AZE": "Azerbaijan",
+    "BHR": "Bahrain", "BGD": "Bangladesh", "BTN": "Bhutan",
+    "BRN": "Brunei", "KHM": "Cambodia", "CHN": "China", "CYP": "Cyprus",
+    "GEO": "Georgia", "IND": "India", "IDN": "Indonesia", "IRN": "Iran",
+    "IRQ": "Iraq", "ISR": "Israel", "JPN": "Japan", "JOR": "Jordan",
+    "KAZ": "Kazakhstan", "KWT": "Kuwait", "KGZ": "Kyrgyzstan",
+    "LAO": "Laos", "LBN": "Lebanon", "MYS": "Malaysia",
+    "MDV": "Maldives", "MNG": "Mongolia", "MMR": "Myanmar",
+    "NPL": "Nepal", "PRK": "North Korea", "OMN": "Oman",
+    "PAK": "Pakistan", "PSE": "Palestine", "PHL": "Philippines",
+    "QAT": "Qatar", "SAU": "Saudi Arabia", "SGP": "Singapore",
+    "KOR": "South Korea", "LKA": "Sri Lanka", "SYR": "Syria",
+    "TWN": "Taiwan", "TJK": "Tajikistan", "THA": "Thailand",
+    "TLS": "Timor-Leste", "TUR": "Turkey", "TKM": "Turkmenistan",
+    "ARE": "United Arab Emirates", "UZB": "Uzbekistan",
+    "VNM": "Vietnam", "YEM": "Yemen",
+    # -- Asia: territories --
+    "HKG": "Hong Kong", "MAC": "Macao",
+    # --- Europe ---
+    "ALB": "Albania", "AND": "Andorra", "AUT": "Austria",
+    "BLR": "Belarus", "BEL": "Belgium", "BIH": "Bosnia and Herzegovina",
+    "BGR": "Bulgaria", "HRV": "Croatia", "CZE": "Czech Republic",
+    "DNK": "Denmark", "EST": "Estonia", "FIN": "Finland",
+    "FRA": "France", "DEU": "Germany", "GRC": "Greece",
+    "HUN": "Hungary", "ISL": "Iceland", "IRL": "Ireland",
+    "ITA": "Italy", "XKX": "Kosovo", "LVA": "Latvia",
+    "LIE": "Liechtenstein", "LTU": "Lithuania", "LUX": "Luxembourg",
+    "MLT": "Malta", "MDA": "Moldova", "MCO": "Monaco",
+    "MNE": "Montenegro", "NLD": "Netherlands",
+    "MKD": "North Macedonia", "NOR": "Norway", "POL": "Poland",
+    "PRT": "Portugal", "ROU": "Romania", "RUS": "Russia",
+    "SMR": "San Marino", "SRB": "Serbia", "SVK": "Slovakia",
+    "SVN": "Slovenia", "ESP": "Spain", "SWE": "Sweden",
+    "CHE": "Switzerland", "UKR": "Ukraine", "GBR": "United Kingdom",
+    "VAT": "Vatican City",
+    # -- Europe: territories --
+    "ALA": "Aland Islands", "FRO": "Faroe Islands", "GIB": "Gibraltar",
+    "GGY": "Guernsey", "IMN": "Isle of Man", "JEY": "Jersey",
+    "SJM": "Svalbard and Jan Mayen",
+    # --- Oceania ---
+    "AUS": "Australia", "FJI": "Fiji", "KIR": "Kiribati",
+    "MHL": "Marshall Islands", "FSM": "Micronesia", "NRU": "Nauru",
+    "NZL": "New Zealand", "PLW": "Palau", "PNG": "Papua New Guinea",
+    "WSM": "Samoa", "SLB": "Solomon Islands", "TON": "Tonga",
+    "TUV": "Tuvalu", "VUT": "Vanuatu",
+    # -- Oceania: territories --
+    "ASM": "American Samoa", "COK": "Cook Islands",
+    "PYF": "French Polynesia", "GUM": "Guam", "NCL": "New Caledonia",
+    "NIU": "Niue", "NFK": "Norfolk Island",
+    "MNP": "Northern Mariana Islands", "PCN": "Pitcairn Islands",
+    "TKL": "Tokelau", "WLF": "Wallis and Futuna",
+    # -- Antarctic / minor outlying --
+    "ATA": "Antarctica", "ATF": "French Southern Territories",
+    "HMD": "Heard Island and McDonald Islands",
+    "IOT": "British Indian Ocean Territory",
+    "SGS": "South Georgia and the South Sandwich Islands",
+    "UMI": "United States Minor Outlying Islands",
+    "BVT": "Bouvet Island", "CXR": "Christmas Island",
+    "CCK": "Cocos (Keeling) Islands",
+    "SHN": "Saint Helena, Ascension and Tristan da Cunha",
 }
 
 
 def country_name(code):
-    return COUNTRY_NAME.get(code, code)
+    """Map an ISO 3166-1 alpha-3 code to its common name. Falls back to the
+    raw code (honest) when a code truly isn't in the table -- but that
+    fallback is now the exceptional case, not the routine one (see the
+    36-entry-table postmortem above), so it logs loudly rather than
+    silently: a code that reaches here will never prose-match a thread
+    (match_country_pair/match_thread search for the MAPPED NAME, not the
+    code) and will rot as a permanent, un-convergeable 'candidate' exactly
+    like the original bug -- this is the signal that the table itself has
+    a real gap that needs a new entry, not routine operation."""
+    name = COUNTRY_NAME.get(code)
+    if name is not None:
+        return name
+    log_skip("build_world_news",
+             f"no COUNTRY_NAME entry for {code!r} -- falling back to the "
+             f"raw code. This code will never match thread prose and will "
+             f"rot as a permanent candidate; add it to COUNTRY_NAME in "
+             f"tools/build_world_news.py.")
+    return code
 
 
-# US alias handling: kestrel's own prose almost never spells out "United
-# States" -- everything says "US". Checking only the phrase "united
-# states" made the country-pair match silently fail for nearly every
-# USA-involving story (found 2026-07-30 re-checking full output, not just
-# a handful of spot-checks: "Iran-United States: Fight" matched the WRONG
-# thread because no thread actually contains "united states" verbatim, so
-# the strict check never fired and it fell through to a noisier path).
-# "US" is checked case-SENSITIVE against the un-lowercased blob, since
-# kestrel's writing convention reliably capitalizes the abbreviation and
-# never uses lowercase "us" the pronoun in this register -- an unambiguous
-# signal a case-insensitive check couldn't give.
-COUNTRY_ALIASES = {"United States": ["United States", "USA"]}  # + "US", handled specially
+# Alias handling: some countries have multiple surface forms that show up
+# in kestrel's own thread prose far more often than their COUNTRY_NAME
+# primary name -- checking only the primary name silently fails the
+# country-pair match for every one of them. COUNTRY_ALIASES maps a
+# primary name to the full list of forms to check (the primary name
+# itself is included so the list is complete on its own).
+#
+# Generalized 2026-08-05 from the USA-only special case (found
+# 2026-07-30: kestrel's prose almost never spells out "United States",
+# only "US" -- checking only the phrase "united states" made the
+# country-pair match silently fail for nearly every USA-involving story:
+# "Iran-United States: Fight" matched the WRONG thread because no thread
+# actually contains "united states" verbatim, so the strict check never
+# fired and it fell through to a noisier path) to cover any country with
+# the same problem. PSE is the motivating case for the generalization:
+# kestrel's thread prose refers to it as "Palestine", "Gaza", or "West
+# Bank" -- almost never the bare primary name alone.
+COUNTRY_ALIASES = {
+    "United States": ["United States", "USA"],  # + "US", case-sensitive below
+    "Palestine": ["Palestine", "Gaza", "West Bank"],
+}
+
+# A handful of aliases are short enough to be ambiguous in lowercase (the
+# US pronoun "us", for instance) and are only safe to match case-SENSITIVE
+# against the un-lowercased blob, since kestrel's writing convention
+# reliably capitalizes the abbreviation and never uses lowercase "us" the
+# pronoun in this register -- an unambiguous signal a case-insensitive
+# check couldn't give. Keyed the same way as COUNTRY_ALIASES; empty for a
+# country with no such short-form alias.
+COUNTRY_ALIASES_CASE_SENSITIVE = {
+    "United States": ["US"],
+}
+
+
+def _alias_positions(name, blob_lower, blob_original):
+    """Every match position for `name` in a thread blob, across its
+    primary form + all case-insensitive aliases (COUNTRY_ALIASES) + any
+    case-sensitive-only short forms (COUNTRY_ALIASES_CASE_SENSITIVE). A
+    country with no entry in either table just checks its own name --
+    same behavior as before generalization."""
+    positions = []
+    for alias in COUNTRY_ALIASES.get(name, [name]):
+        positions += [m.start() for m in
+                      re.finditer(r"\b" + re.escape(alias.lower()) + r"\b", blob_lower)]
+    for alias in COUNTRY_ALIASES_CASE_SENSITIVE.get(name, []):
+        positions += [m.start() for m in
+                      re.finditer(r"\b" + re.escape(alias) + r"\b", blob_original)]
+    return positions
 
 # Found 2026-07-30 checking real matches, not just the count: a 2-keyword
 # hit can be genuinely distinguishing ("hugging"+"face" -- correctly found
@@ -140,11 +294,7 @@ MATCH_GENERIC = {
 
 
 def _country_present(name, blob_lower, blob_original):
-    if name == "United States":
-        if re.search(r"\bunited states\b", blob_lower) or re.search(r"\busa\b", blob_lower):
-            return True
-        return bool(re.search(r"\bUS\b", blob_original))  # case-sensitive
-    return bool(re.search(r"\b" + re.escape(name.lower()) + r"\b", blob_lower))
+    return bool(_alias_positions(name, blob_lower, blob_original))
 
 
 def load_thread_haystacks():
@@ -195,12 +345,7 @@ def match_country_pair(names, haystacks, window=400):
         positions = []
         ok = True
         for n in names:
-            if n == "United States":
-                ms = ([m.start() for m in re.finditer(r"\bunited states\b", blob_lower)] +
-                      [m.start() for m in re.finditer(r"\busa\b", blob_lower)] +
-                      [m.start() for m in re.finditer(r"\bUS\b", blob_orig)])
-            else:
-                ms = [m.start() for m in re.finditer(r"\b" + re.escape(n.lower()) + r"\b", blob_lower)]
+            ms = _alias_positions(n, blob_lower, blob_orig)
             if not ms:
                 ok = False
                 break
@@ -216,12 +361,13 @@ def match_country_pair(names, haystacks, window=400):
 
 def match_thread(countries, haystacks):
     """A GDELT intl bucket matches a thread ONLY if every country name in
-    the pair appears as a whole word in that thread's blob -- strict on
-    purpose (single-country substring matching false-positives constantly:
-    a lone "china" match would hit nearly every AI thread)."""
-    names = [country_name(c).lower() for c in countries]
-    for slug, blob in haystacks.items():
-        if all(re.search(r"\b" + re.escape(n) + r"\b", blob) for n in names):
+    the pair appears (as a whole word, via its alias set -- see
+    COUNTRY_ALIASES) in that thread's blob -- strict on purpose
+    (single-country substring matching false-positives constantly: a lone
+    "china" match would hit nearly every AI thread)."""
+    names = [country_name(c) for c in countries]
+    for slug, h in haystacks.items():
+        if all(_country_present(n, h["full"], h["full_original"]) for n in names):
             return slug
     return None
 

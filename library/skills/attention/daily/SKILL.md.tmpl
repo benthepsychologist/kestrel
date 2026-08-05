@@ -248,6 +248,17 @@ Operating rules (distilled from real failures, 07-27/28):
   contradiction is the error detector (it caught the SpaceX date).
 - Scale check: ~6-9 agents per run, growing with CLUSTER count, not
   thread count.
+- **A silent sweep gets re-dispatched, not waited on indefinitely.** A
+  transcript file's size/mtime look identical whether an agent is working
+  normally or permanently stalled — the motivating case was a declined
+  tool call causing a 2+ hour stall with zero signal. If one dispatch in
+  a batch has been silent for several multiples of its sibling
+  dispatches' typical return time, don't keep guessing: re-dispatch that
+  lens/cluster fresh, and mark its lens's window UNREAD in the digest
+  rather than inferring a result that never landed. If the original,
+  late-running agent's response DOES eventually show up, reconcile it
+  against whatever the re-dispatch produced — don't just discard it, it
+  may still hold real findings the re-dispatch missed.
 
 Curated by this session against the same templates. Same contract as the
 future pipeline — say "agentic-interim" in the digest's *Curated from*

@@ -373,23 +373,53 @@ adapter itself is now instance-owned:
   `kestrel/tools/publish/adapters/` — whoever builds it should declare it
   via that repo's own `kestrel.yaml` `outputs.adapter`, same pattern.
 
-## §7 Jurisdiction record schema v1 — DRAFT
+## §7 Jurisdiction record schema v1
 
-Seeded from the initiation's §7 record sketch: `jurisdiction`,
-`profession_scope`, `topic`, `regulatory_model`, `statute_citation`,
-`status` (+ enacted/in-effect dates), `enforcement_body`,
-`authority_basis`, `penalties`, `clinician_facing_obligations`,
-`vendor_facing_obligations`, `consent_required`,
-`documentation_required`, `source_url`, `last_verified`, `confidence`,
-`notes`.
+One record drives both the compliance map/matrix views and the
+therapybulletin-data newsletter diff. **Resolved 2026-07-31 (Ben):** the
+schema-finalization gate this section used to carry is moot — the
+underlying research artifacts were never actually schema-relevant, so
+there is no do-not-re-derive instruction left to violate. therapybulletin-
+data's own copy, `schema/record.yaml`, was finalized the same day and is
+the authoritative **instance** copy (see its own README/STATUS).
 
-⚠️ **Marked DRAFT deliberately.** The three §14.1 research artifacts
-(chat-history-only as of 2026-07-30; Ben exports) include a worked
-schema in artifact #1 — finalizing v1 before reading them would violate
-the spec's own do-not-re-derive instruction. The contract isolates this
-cleanly: `schema/record.yaml` lives in the instance, versioned by the
-instance, and the engine never interprets record *fields* — only the
-diff engine's generic field-change semantics touch them.
+The record shape itself, however, traces to a schema kestrel doesn't
+own: the **authoritative source of the schema design** is `pm`'s
+`streams/research-and-writing/projects/therapy-bulletin/deliverables/
+initiation-and-plan/bh-compliance-initiation.md`, §7 "Jurisdiction record
+schema". Inlined here in full (fields, enums, and types — not the
+field-name-only list this section used to carry) so this doc stays a
+complete reference without a round-trip to `pm`:
+
+```yaml
+jurisdiction: {country, state_or_province, code}
+profession_scope: [psychologist, counselor, clinical_social_worker, mft, psychotherapist]
+topic: [licensure | scope | telepractice | privacy | retention | insurance | tax | ai | payer]
+regulatory_model: [prohibition | disclosure | crisis_response | clinician_restriction |
+                   insurer_UR | minor_protection | none]
+statute_citation: {short_title, bill_number, code_cite, public_act}
+status: [introduced | passed_chamber | enacted | effective | vetoed | superseded]
+enactment_date
+effective_date
+enforcement_body
+authority_basis: [licensure | consumer_protection | insurance | privacy | tax]
+penalties
+clinician_facing_obligations
+vendor_facing_obligations
+consent_required: bool
+documentation_required: bool
+source_url: [primary, secondary]
+last_verified_date
+confidence: [high | medium | low]
+notes
+```
+
+Any field change since `last_verified_date` emits a changelog entry —
+that changelog rollup **is** the newsletter. The contract stays exactly
+as clean as it was under the old DRAFT framing: `schema/record.yaml`
+lives in the instance, versioned by the instance, and the engine never
+interprets record *fields* — only the diff engine's generic field-change
+semantics touch them.
 
 ## §8 Identity & safety invariants
 
@@ -418,7 +448,7 @@ diff engine's generic field-change semantics touch them.
 | 2 | bh repos scaffolded (data + site, private) | manifest validates; Hugo builds clean; cross-link grep = 0 |
 | 3 | collector generalization + page-diff class | poll-wholesale mode live; lens stamps out of modules; per-instance destinations; page-diff proven on 2 sources (1 gazette, 1 college) |
 | 4 | diff→changelog engine + runner | a real sweep stages candidates; governance checks fire; changelog entries emit |
-| 5 | records + stage-0 content | gated on §14.1 artifacts export + editorial foundation |
+| 5 | records + stage-0 content | gated on editorial foundation (the §14.1-artifacts-export gate closed as moot, Ben's 2026-07-31 call — see §7) |
 | 6 | instance #1 (`theprojection-data`) extraction | ✅ **done 2026-07-31** (Ben called it) — data+docs+skills moved, `KESTREL_INSTANCE` re-roots the tool stack (engine-repo fallback for pre-split checkouts), manifest `kind: attention` shipped; gates: render + staged publish byte-identical pre/post removal, loud no-env failure, bh sweep unaffected; one leak caught (publish provenance wrote to engine root — core now takes the instance root from the adapter) |
 
 **Coordination (resolved 2026-07-30 evening):** the visiting session
@@ -440,7 +470,7 @@ disjoint write scopes (listed — the file claim IS the coordination):
 | **1** | **1a** sonnet — extract `tools/publish/` core + `theprojection` adapter, from main's module-boundary spec (claims `tools/publish_projection.py` → `tools/publish/*`) · **2** sonnet — scaffold both bh repos from §2's manifest, local + private, org creation deferred to §12 (claims the two new repo dirs only) · **3a** sonnet — `base.py` destinations-from-layout + poll-wholesale + lens-from-watch incl. the §3.5 seven+two (claims the *existing* `collectors/` modules + `tools/collect.py`) · **3b** sonnet — `page-diff` collector + normalize-hints format (claims the *new* `collectors/page_diff.py` only — disjoint from 3a by construction) | all four report; zero cross-claim edits |
 | **2** | gates, main judges: **G1** staged-publish pre/post diff (normalized per §6) · **G3** `collect.py` fixed-window run pre/post — identical buffer + provenance shape · **G2** bh manifest validates, Hugo builds, cross-link grep = 0 · **prove page-diff live** on 1 gazette + 1 college via the bh manifest · haiku — de-hardcoding-ledger grep sweep over the extracted core (every §6 ledger literal must be gone from engine files) | every gate green; fixes land same-wave |
 | **3** | **4** main designs candidate/changelog shapes + runner CLI surface → sonnet builds runner + diff engine (claims new files + their wiring) | phase-4 done-when: a real bh sweep stages candidates, governance fires, changelog emits |
-| — | **5** ⛔ gated on §10 artifacts export · **6** gated on contract proven + Ben's call | — |
+| — | **5** gated on editorial foundation (the old §10 artifacts-export gate closed as moot, Ben's 2026-07-31 call — see §7) · **6** gated on contract proven + Ben's call | — |
 
 **Probe freshness:** the page-diff source probes are 2026-07-30-fresh
 (recon receipts, pm project). Re-probe (haiku) only if wave 1 starts
@@ -519,8 +549,6 @@ gets its own plan when Ben calls it.
   (lobby@sec.senate.gov) / House LRC (lobbyinfo@mail.house.gov)
   contacts who could plausibly allowlist a key on request — that's
   outreach for Ben to decide on, not something kestrel resolves itself.
-- ⛔ **Three §14.1 research artifacts** — chat-history-only; Ben
-  exports. Gates §7 finalization + all content, nothing else.
 - ⛔ **LegiScan API key** — tier-1 "backbone"; signup in flight
   (operator signup; address per the private keys ledger).
 - 📋 Manifest filename (`kestrel.yaml` is a working name).

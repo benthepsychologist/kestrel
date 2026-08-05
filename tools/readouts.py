@@ -406,11 +406,34 @@ def _sentence(s):
     return bool(s) and s.rstrip().rstrip('"\'”’)]').rstrip()[-1:] in ".?!…"
 
 
+def _split_sentences(s):
+    """Best-effort sentence split, used only when a briefing's `watch`
+    arrives as a single string instead of the required array (see
+    normalize_briefing below) -- the shape text asks for an array but was
+    worded as "N sentences" for a while, which reads as ordinary prose
+    instructions and invited a plain string back. Splits on a
+    sentence-ending mark followed by whitespace; a string with no such
+    boundary comes back as one single-item list, same as if the caller
+    had submitted a genuine one-item array."""
+    s = " ".join((s or "").split())
+    if not s:
+        return []
+    return [p for p in re.split(r"(?<=[.?!…])\s+", s) if p]
+
+
 def normalize_briefing(v):
     v = v or {}
     def bl(items):
         return [{"emoji": b.get("emoji"), "text": " ".join((b.get("text") or "").split()),
                  "url": b.get("url")} for b in (items or []) if b.get("text")]
+    watch = v.get("watch")
+    if isinstance(watch, str):
+        # A submission that ignored the ARRAY instruction and wrote `watch`
+        # as one string used to fall straight into `for x in watch`, which
+        # iterates a string CHARACTER BY CHARACTER -- a real, recurring
+        # failure (INBOX 2026-08-04, gap 1). Degrade gracefully instead of
+        # corrupting the data or crashing.
+        watch = _split_sentences(watch)
     return {
         "gist": " ".join((v.get("gist") or "").split()),
         "lead": bl(v.get("lead")),
@@ -418,7 +441,7 @@ def normalize_briefing(v):
                       "heading": " ".join((s.get("heading") or "").split()),
                       "bullets": bl(s.get("bullets"))}
                      for s in (v.get("sections") or []) if s.get("heading")],
-        "watch": [" ".join((x or "").split()) for x in (v.get("watch") or []) if x],
+        "watch": [" ".join((x or "").split()) for x in (watch or []) if x],
     }
 
 
@@ -453,6 +476,38 @@ def _check_link_floor(p, bullets, available):
                  f"{need} must link (see LINK_FLOOR)")
 
 
+def _scope_source_urls(w, scope):
+    """The URLs a scope's pack actually offers to cite: every `url` in its
+    `breaking`/`news` (at PACK_LIMITS -- the same call build_pack() makes,
+    so this reproduces exactly what the model was shown, not the tighter
+    DISPLAY_LIMITS a stored readout renders with elsewhere), plus each of
+    the scope's own threads' page link (`/threads/<slug>/` -- the shape
+    text's own explicit fallback for a fact sourced from
+    `recent_timeline`, which carries no url of its own). A bullet's `url`
+    that matches neither was never actually in this scope's source
+    material."""
+    breaking, news = derive_sections(w, scope, PACK_LIMITS)
+    urls = {i["url"] for i in breaking + news if i.get("url")}
+    urls |= {f"/threads/{t['slug']}/" for t in scope_threads(w, scope)}
+    return urls
+
+
+def _check_url_provenance(p, where, items, known_urls):
+    """A bullet's `url`, if present, must be one this scope's own pack
+    actually offered (see _scope_source_urls) -- closes the fabrication
+    gap flagged in INBOX 2026-08-04 gap 2: `_check_bullets`/
+    `_check_link_floor` only ever checked that a url was PRESENT and
+    well-formed, never that it came from real source material, so a
+    plausible-looking url that was never in the pack passed silently."""
+    for i, b in enumerate(items, 1):
+        url = b.get("url")
+        if url and url not in known_urls:
+            p.append(f"{where} bullet {i}: url {url!r} is not in this "
+                      "scope's own source pack (no matching breaking/news "
+                      "url, and not a /threads/<slug>/ link for one of "
+                      "its threads) -- looks fabricated")
+
+
 def _check_bullets(p, where, items, lo, hi):
     if not (lo <= len(items) <= hi):
         p.append(f"{where}: need {lo}-{hi} bullets (got {len(items)})")
@@ -466,16 +521,22 @@ def _check_bullets(p, where, items, lo, hi):
             p.append(f"{where} bullet {i}: must be a full sentence, not a fragment")
 
 
-def validate_briefing(scope, rec, available=0):
-    """-> (briefing_dict, [problems]) for front + lens scopes."""
+def validate_briefing(scope, rec, w, available=0):
+    """-> (briefing_dict, [problems]) for front + lens scopes.
+
+    `w` (the loaded world, see load_world()) is needed to check bullet
+    `url`s against this scope's own real source material — see
+    _scope_source_urls/_check_url_provenance."""
     b = normalize_briefing(rec.get("briefing"))
     p = []
+    known_urls = _scope_source_urls(w, scope)
     if not (GIST_MIN <= len(b["gist"]) <= GIST_MAX):
         p.append(f"gist must be {GIST_MIN}-{GIST_MAX} chars (got {len(b['gist'])})")
     elif not _sentence(b["gist"]):
         p.append("gist must be a sentence")
 
     _check_bullets(p, "lead", b["lead"], BULLETS_MIN, BULLETS_MAX)
+    _check_url_provenance(p, "lead", b["lead"], known_urls)
 
     n = len(b["sections"])
     if not (SECTIONS_MIN <= n <= SECTIONS_MAX):
@@ -488,6 +549,7 @@ def validate_briefing(scope, rec, available=0):
             p.append(f"section {h[:20]!r}: emoji {s.get('emoji')!r} not in the typed set")
         _check_bullets(p, f"section {h[:20]!r}", s["bullets"],
                        SEC_BULLETS_MIN, SEC_BULLETS_MAX)
+        _check_url_provenance(p, f"section {h[:20]!r}", s["bullets"], known_urls)
 
     # The front's sections ARE the lenses — that is what guarantees no lens
     # goes dark while `lead` stays ranked purely on salience (Ben's split,
@@ -515,12 +577,17 @@ def validate_briefing(scope, rec, available=0):
     return b, p
 
 
-def validate_summary(scope, rec, available=0):
+def validate_summary(scope, rec, w, available=0):
     """-> (summary_dict, [problems]). Shape is enforced HERE, not in the
     prompt — a prompt-only rule drifts back to prose within a few runs,
-    which is exactly how v1 ended up with 160 paragraphs."""
+    which is exactly how v1 ended up with 160 paragraphs.
+
+    `w` (the loaded world, see load_world()) is needed to check bullet
+    `url`s against this scope's own real source material — see
+    _scope_source_urls/_check_url_provenance."""
     s = normalize_summary(rec.get("summary"))
     p = []
+    known_urls = _scope_source_urls(w, scope)
 
     if not (GIST_MIN <= len(s["gist"]) <= GIST_MAX):
         p.append(f"gist must be {GIST_MIN}-{GIST_MAX} chars (got {len(s['gist'])})")
@@ -541,6 +608,7 @@ def validate_summary(scope, rec, available=0):
             p.append(f"bullet {i}: must be a full sentence, not a fragment")
 
     _check_link_floor(p, s["bullets"], available)
+    _check_url_provenance(p, "bullet", s["bullets"], known_urls)
 
     if not (WATCH_MIN <= len(s["watch"]) <= WATCH_MAX):
         p.append(f"watch must be {WATCH_MIN}-{WATCH_MAX} chars (got {len(s['watch'])})")
@@ -812,8 +880,11 @@ def build_pack(w, scope):
                        "`breaking`/`news`; if it came from "
                        "`recent_timeline`, link `/threads/<thread>/` using "
                        "that entry's slug. null only if neither exists."),
-            "watch": (f"{WATCH_ITEMS_MIN}-{WATCH_ITEMS_MAX} sentences, each "
-                      f"{WATCH_MIN}-{WATCH_MAX} chars — the open questions. "
+            "watch": (f"ARRAY of {WATCH_ITEMS_MIN}-{WATCH_ITEMS_MAX} "
+                      f"strings, NOT a single string — one sentence per "
+                      f"array entry, each {WATCH_MIN}-{WATCH_MAX} chars — "
+                      "the open questions, e.g. "
+                      '["<sentence 30-240 chars>", ...]. '
                       "Do not open with the word \"Watch\"."),
             "emoji": SUMMARY_EMOJI,
             "rules": [
@@ -913,10 +984,10 @@ def main():
                 continue
             avail = linkable_count(w, scope)
             if briefing_scope(scope):
-                brief, problems = validate_briefing(scope, rec, avail)
+                brief, problems = validate_briefing(scope, rec, w, avail)
                 summary = None
             else:
-                summary, problems = validate_summary(scope, rec, avail)
+                summary, problems = validate_summary(scope, rec, w, avail)
                 brief = None
             if problems:
                 skipped.append((scope, "; ".join(problems[:3])))
