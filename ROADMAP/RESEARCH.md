@@ -1,17 +1,26 @@
 # RESEARCH — kestrel as methodology hub: the investigation ontology, the claim substrate, the verification architecture, and the automation ladder
 
-**Status: PROPOSED** — agent-drafted 2026-08-02 from Ben's direction across
+**Status: ACTIVE** — agent-drafted 2026-08-02 from Ben's direction across
 three design conversations (2026-07-31 evening, 2026-08-01, 2026-08-02),
 then **rewritten the same day against seven read-only crawls of four
-sibling repositories.** Nothing here is built.
+sibling repositories.** No longer a proposal awaiting a decision: Ben has
+ruled the buildout-model reframe live. The product side already shipped —
+theprojection-site's front page was rebuilt into a three-card News / Map /
+Research hub on 2026-08-03 — and this document's own stage-0/stage-1
+design has itself been exercised for real: q1 and q2's skeletons ran a
+full color-team review (§7.9) to zero substantive residue, producing five
+principal rulings (R-16–R-20) that are folded into this revision. Most of
+the engine machinery this document proposes (§11.3) is still unbuilt —
+what has changed is the design's status, from drafted-for-review to
+adopted and already load-bearing on real work.
 
-**What changed in the rewrite.** The first draft reasoned from first
-principles and reinvented a great deal. The crawls found that most of it
-already exists in Ben's prior work — usually better specified, sometimes
-running in code, occasionally with recorded numbers showing how it
-actually behaves. §12 is the ledger of what is adopted from where. Where
-this document now proposes something, it is mostly **composition**, not
-invention.
+**What changed in the 2026-08-02 rewrite.** The first draft reasoned from
+first principles and reinvented a great deal. The crawls found that most
+of it already exists in Ben's prior work — usually better specified,
+sometimes running in code, occasionally with recorded numbers showing how
+it actually behaves. §12 is the ledger of what is adopted from where.
+Where this document now proposes something, it is mostly **composition**,
+not invention.
 
 **Peer to** `DESIGN.md` (the engine/instance split, the manifest contract)
 and `KITS.md` (the skill library).
@@ -258,13 +267,32 @@ questions:
     answered_by: [claim ids…]
     sub_questions: [q1a, q1b, …]
     state: open                    # open | partial | converged | dark
-    bar: |
-      What would count as an answer, in Ben's words, written before any
-      sourcing. The acceptance criterion. Not the system's to write.
+    milestones:                    # NOT a bar — no done state, see below
+      - cut: core-buildout         # a named, versioned filter — §4.1
+        threshold: "<10%"          # ⚙ estimated error bar on headline totals, relative
+        status: open
+      - "capability questions answered at quantified uncertainty — never a pass/fail label"
 ```
 
-**`bar` is load-bearing.** A question without a stated bar cannot converge
-and will drift back into topic-shaped monitoring.
+**There is no bar and no done state (R-19, ruled 2026-08-03).** The
+question object above originally carried a `bar` field — "what would
+count as an answer, in Ben's words, written before any sourcing" — and
+called it load-bearing. Ben ruled that dead on the first real skeletons:
+*"There is no bar. There's no finished… There's no done state on
+anthropologic research."* · *"we don't have done criteria we have
+completion milestones: estimated error bars at <10% is what comes to mind
+for each system boundary we decide we care about."* · *"I don't think we
+ever STOP looking for more fidelity. EVER. We want it all."* Research
+against a moving system doesn't converge to closed; it converges to *good
+enough for now, revisited when a better source turns up*. What is
+load-bearing instead is **`milestones`** — per named cut (§4.1), the
+estimated error bar on its headline totals falling below a tunable
+threshold (starting value <10% relative), each a waypoint and never a
+finish line. There is no phase gate between a baseline period and a
+forward one — periods progress toward coverage in parallel — and "live
+vs. maintained" is dead as a binary: the model is always both, at some
+stated confidence. Effort allocation follows fidelity return and stops
+only at a source-quality wall, never at a declared bar.
 
 ### 3.1 The standing question set
 
@@ -297,7 +325,7 @@ thought of"* — **ratification pending, see the open-questions item.**
 
 | # | layer | note |
 | --- | --- | --- |
-| L01 | Minerals & mining | boundary question — see open questions |
+| L01 | Minerals & mining | boundary is filter-relative, not fixed — §4.1 |
 | L02 | Land & siting | |
 | L03 | Power generation | |
 | L04 | ✚ Grid interconnection | queues, transformers, switchgear — the real rate-limiter in most US markets |
@@ -334,6 +362,50 @@ indexes and blah blah blah."* Capital stops being a lens and becomes a
 property of flows: you look at a named datacenter and see who financed it,
 with what instrument, at what cost, and who is exposed if it does not
 lease up.
+
+### 4.1 Boundaries are filters, not memberships (R-16/R-17, ruled 2026-08-03)
+
+L01's "boundary question" above, and the capital out-of-scope call just
+made, are both instances of one question: what counts as *inside* the
+system being modeled. Ben ruled directly against treating that as an
+ontology to define:
+
+> "we are mapping flows between entities and 'inside/outside' is not
+> about membership, membership is just a filter that classifies companies
+> into a system or group, and all THAT has to do is count capital flows
+> as transfers if they are inside the filtered group." (R-16)
+
+> "It's a filter not a rule. We can draw the line at cloud providers. We
+> can draw it at retail inference if we have a good enough map. The quest
+> for a rule here is a modeling question not a data question... If we can
+> decompose revenue at that level we will. If we can't, we'll name the
+> ambiguity." (R-17)
+
+**Consequences, and they apply to every layer and every dimension in §5,
+not only the flow map:**
+
+- **The base record is classification-free.** Entity-to-entity flows (and,
+  by extension, layer membership and dimension assignment) are collected
+  at the finest gettable granularity with no in/out label attached at
+  capture time.
+- **A boundary is a named, versioned filter**, applied on top of that base
+  record — never baked into it. Filter parameters live in `⚙` config, not
+  in the schema.
+- **Every consolidated total is stamped** with which map version, which
+  filter version, and which parameter set produced it. "Transfer" is
+  filter-relative, never an intrinsic property of a flow.
+- **Cuts are alternatives, not verdicts.** "At cloud providers" and "at
+  retail inference" are both legitimate cuts of the same base map; the
+  system does not adjudicate between them. Reseller-level flows are
+  collected regardless of which cut is currently in use.
+- **Where a decomposition can't resolve past a boundary, the surface names
+  the ambiguity** rather than picking a side silently.
+
+This dissolves L01's "boundary question" as originally framed above — the
+bottom of the stack was never a line to rule on, only a filter parameter —
+and generalizes the "Out of scope" capital call just above: capital isn't
+excluded by definition, it's excluded by the current filter, and a future
+filter could include it.
 
 ---
 
@@ -879,6 +951,62 @@ findings = 80% count-based, but only 3 of 15 = 20% were substantive."*
 more.** *"Research more"* is a genuinely distinct state the first draft
 lacked — the layer isn't wrong, it's under-evidenced.
 
+### 7.9 First real execution: q1/q2's skeletons, ratified to zero residue
+
+§§7.1–7.8 above were written from prior art in sibling repos — none of it
+had yet run inside kestrel's own question loop. It has now. q1's and q2's
+Stage-1 skeletons went through the full core-four-seat cycle (Green ∥ Red
+→ Blue reads Red only → White reads everything, §7.7), and converged:
+
+- **Round 1, both skeletons failed, as a first round should.** q1 landed
+  at 8 substantive carries against the ≤2 bar, q2 at 10 (12 changes) —
+  both MODIFY, "must not route as-is." Both verdicts shared one
+  diagnosis: the frames held completely (no finding touched a ruling),
+  but the designs specified *representations* precisely while leaving the
+  *operations* over them — membership, summation, reconciliation, joins —
+  unspecified.
+- **Ben ruled** on the punch-list items that needed a principal (R-16–R-20
+  above and in §4.1), v3 skeletons were drafted against the ruled punch
+  lists, and **round 2 each failed by exactly one carry** (q1: a typing
+  fix's own wording had ejected EPC contracts from gross build; q2: the
+  revenue ladder had no legal stage-enum encoding) — both
+  reviewer-remedied the same day.
+- **Round 3, a targeted micro-recheck: PASS, zero substantive residue on
+  both.** Full trail — 14 seat memos plus 2 RESULTS rollups — sits in
+  `theprojection-corpus/INBOX/q1-color/` and `q2-color/`.
+
+**Eight method findings came out of this run, and they belong in the
+`/color-team` skill (§11.3) when it's built, not just in the log:**
+
+1. Green must cite the governing rule at every step of a worked
+   demonstration — round 1's Green claimed "no rule needed
+   interpretation," which was checkable and false (it had silently
+   supplied missing rules; White caught it).
+2. Blue must stress-test Red's remedies, not only its charges — three
+   verbatim-adopted remedies carried defects White had to catch.
+3. Seat summaries must be machine-countable (a Blue claimed six carries
+   while enumerating seven).
+4. Tag semantics need the gloss: SUBSTANTIVE ⇔ requires design revision —
+   both tag disputes traced to its absence.
+5. Pin the pass bar's counting unit (finding vs. design-change) before any
+   close round — this round failed under every unit, but a close one
+   would hinge on it.
+6. The ≤2-carry bar is calibrated for post-revision rounds, not first
+   passes on fresh designs — the diagnostic first-round signal was "zero
+   findings touched a ruling."
+7. Blue-reads-Red-only earned its keep — material corrections of Red in
+   both runs, upheld at adjudication; the answering seat adds signal.
+8. The cycle shape that worked: full four-seat round → revision →
+   **targeted** pass (bar: zero) → same-day amendment → micro-recheck.
+   Two full rounds were never needed.
+
+**What this calibrates.** §7.7's granularity ruling (a layer or a section
+is the unit, never a claim) and §7.8's ≤2-carry bar were both prior-art
+imports, untested inside kestrel's own loop until this run — they held.
+The `/color-team` library skill in §11.3 is still unbuilt code, but its
+*method* is no longer speculative: it has a completed, ratified run behind
+it, with the eight findings above as its first calibration data.
+
 ---
 
 ## 8. The investigation process
@@ -887,7 +1015,7 @@ Ten stages. Generalizes past q1 — every question in §3.1 runs the loop.
 
 | # | stage | output | owner |
 | --- | --- | --- | --- |
-| **0** | **Frame the question** | question object + `bar` | **Ben, always** |
+| **0** | **Frame the question** | question object + `milestones` (R-19 — no bar, no done state) | **Ben, always** |
 | **1** | **Design the skeleton** | layer decomposition, accounting identity, what counts as accounted-for | Ben + adversarial review |
 | **2** | **Source** | QUOTED claims with bound excerpts + hashes | collectors + targeted retrieval |
 | **3** | **Extract & reconcile** | dual-pass, adjudication, merge (§7) | agents + HITL |
@@ -913,6 +1041,10 @@ For q1 specifically, Stage 1 must settle: which layers are in scope;
 whether the aggregate is annual capex or total mobilization; how
 double-counting is detected (§5); whether a vendor-financed dollar counts
 once or twice.
+
+**This has now happened for real.** q1 and q2's skeletons ran exactly this
+review to convergence — see §7.9 for the run and its verdicts, and §4.1 /
+R-16–R-20 above for the rulings it produced.
 
 ### 8.2 Two working modes
 
@@ -1177,6 +1309,10 @@ call them without kestrel existing at a known path.
 | **`/color-team`** | L2→L3 | Stage 7, parameterized by lenses · rounds · bar |
 | **Maintenance job** | L4 | Stage 9 |
 
+**`/color-team` is unbuilt code but a calibrated method** — see §7.9: a
+full run on q1/q2's skeletons converged to zero substantive residue and
+produced eight method findings the eventual skill should encode.
+
 ### 11.4 The engine / instance boundary
 
 - **Engine:** the claim schema, derivation arithmetic, reconciliation and
@@ -1325,7 +1461,9 @@ to `theprojection-corpus` · the citation record becomes a fourth kestrel instan
 
 **Steps 1–3 precede the research work.** Step 3 is a real regression gate:
 porting a tool that reproduces recorded numbers is how we know the port is
-faithful.
+faithful. **Step 6's method, not just its code, is already de-risked** —
+§7.9's completed q1/q2 run converged the design; what remains is the
+skill wrapper.
 
 **Standing gates still apply** (`AGENTS.md` §1): staged-publish byte-diff
 and fixed-window collect comparison before anything lands.
@@ -1350,9 +1488,11 @@ currently the literal home of this design material. The inter-project
 handoff pattern survives for the ungoverned corpus repos; only kestrel's
 own hopper goes.
 
-**Blocking the q1 run:** the layer list · the bottom boundary · first-pass
-depth · whether extraction convergence is adopted now or retrofitted ·
-where the corpus lives.
+**Blocking the q1 run:** the layer list · first-pass depth · whether
+extraction convergence is adopted now or retrofitted · where the corpus
+lives. (**The bottom boundary is no longer on this list** — R-16/R-17,
+§4.1, resolved it: it was never a fixed line to rule on, only a filter
+parameter, named and versioned.)
 
 ---
 
@@ -1368,3 +1508,14 @@ Analysis not attributed to Ben is the agent's and is offered for
 ratification, not adopted. Figures quoted from sibling repos are reported
 as those repos record them — several are explicitly staged and unverified
 (§9.3).
+
+**Revised 2026-08-05.** Status flipped PROPOSED → ACTIVE per Ben's ruling
+that the buildout-model reframe is live — theprojection-site's front page
+was already rebuilt into the three-card News/Map/Research hub on
+2026-08-03. §3, §4.1, §7.9, and stage 0's row in §8 fold in five principal
+rulings (R-16–R-20) and eight color-team method findings from q1/q2's
+now-completed skeleton review, sourced from
+`theprojection-corpus/INBOX/2026-08-03-q1-skeleton-v3.md` §2 (the
+R-01–R-20 register, landed in that repo's commit `bcef61a`),
+`theprojection-corpus/log.md`'s 2026-08-03 entry, and kestrel's own
+`INBOX/2026-08-03-theprojection-data-q1-q2-skeletons-reviewed.md`.
