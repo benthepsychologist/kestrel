@@ -55,9 +55,12 @@ library/
     registry/                 # kind: registry (compliance instance) — NEW skills
       tend/  curate/  verify/  publish/
   agentdocs/
-    attention/  CLAUDE.md.tmpl  AGENTS.md.tmpl
-    registry/   CLAUDE.md.tmpl  AGENTS.md.tmpl
-    site/       CLAUDE.md.tmpl            # sites get docs, not skills
+    attention/       CLAUDE.md.tmpl  AGENTS.md.tmpl
+    registry/        CLAUDE.md.tmpl  AGENTS.md.tmpl
+    site-attention/  CLAUDE.md.tmpl  # site docs for a site whose DATA sibling is kind:attention
+    site-registry/   CLAUDE.md.tmpl  # site docs for a site whose DATA sibling is kind:registry
+    site/            CLAUDE.md.tmpl  # fallback only — used when the sibling's kind has no
+                                      # site-<kind>/ dir yet; sites get docs, not skills either way
   scaffolds/
     data-attention/           # instance-repo skeletons per kind
     data-registry/            #   (dirs, manifest stub, schema stub, README, LICENSE)
@@ -84,7 +87,15 @@ name its own paths; a library template never does.
 - **Selection:** the manifest's existing `kind:` (`attention` | `registry`)
   selects the kit family: `common/` + `<kind>/` skills + `<kind>/`
   agentdocs. Sites are identified by `instantiate-site` / the sites
-  registry, and receive agentdocs only.
+  registry, and receive agentdocs only. **Site agentdocs are themselves
+  per-DATA-KIND** (added 2026-08-04, `tools/kit.py`'s
+  `discover_agentdoc_templates`/`agentdoc_kind` resolution): a site's
+  content model is dictated by whatever its data sibling emits, so one
+  shared `site/` template can't be correct for both kinds. The sibling's
+  own `kestrel.yaml` `kind:` (never `instances.yaml`) selects
+  `agentdocs/site-<sibling kind>/`, falling back to the generic
+  `agentdocs/site/` only when no `site-<kind>/` dir exists yet for that
+  kind.
 - **Stamp:** installs write `.claude/kit.yaml` in the target:
   `{library_version, kind, installed_at, engine_commit, files: {path: sha256}}`.
   The stamp is how `sync-kits` computes drift without guessing.

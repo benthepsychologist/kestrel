@@ -39,11 +39,16 @@ ontologies and five research methodologies already exist across the fleet.
   a real registry sweep; instance #1's data extracted to
   `theprojection-data` with render + staged publish byte-identical
   before and after.
-- **The KITS system is built** (K1–K6, same day): canonical skill
+- **The KITS system is built** (K1–K6, 2026-07-31): canonical skill
   library + agentdocs + scaffolds in `library/`, `tools/kit.py`
   render/install/sync with no-clobber conflict discipline, four
-  meta-skills, `instances.yaml` fleet registry. **Fleet: all four
-  targets stamped clean at `2026-07-31.3`.**
+  meta-skills, `instances.yaml` fleet registry. **Library is currently
+  at `2026-08-04.2`; the fleet is NOT clean** — `python3 tools/kit.py
+  sync` (2026-08-05): `theprojection-data` is **dirty** (`AGENTS.md`,
+  `CLAUDE.md` locally drifted from the stamp), the other three targets
+  are **behind** at `2026-08-04.1`. Needs an `install-kit --adopt/
+  --discard` pass on the dirty target before a `sync --apply` can bring
+  the rest current — no kestrel session has run either yet.
 - **Two instances in production:** `theprojection-data` (attention —
   feeds theprojection.org, adapter working) and `therapybulletin-data`
   (registry). **The therapybulletin adapter is built and publishing** —

@@ -15,10 +15,17 @@ re-verified against the tree), the engine/instance file inventory added
 (§1), the build sequence expanded into a wave/dispatch plan (§9), and
 the resident-agent coordination note resolved.*
 
-**The framing fact:** kestrel is a public OSS repo moving toward package
-status. Today it mixes engine (`collectors/`, `tools/`) with Ben's
-instance data (`attention/`, `artifacts/`, `sources/`, `provenance/`).
-Everything below reduces that entanglement; nothing below deepens it.
+**The framing fact (as it stood 2026-07-30, before this doc's own split
+executed):** kestrel is a public OSS repo moving toward package status.
+At the time of this draft it mixed engine (`collectors/`, `tools/`) with
+Ben's instance data (`attention/`, `artifacts/`, `sources/`,
+`provenance/`). Everything below reduces that entanglement; nothing below
+deepens it. **That mixing is now resolved** — the split executed
+2026-07-31 (§9, and STATUS.md), and none of those instance-data
+directories exist in this checkout anymore; they moved to
+`theprojection-data`. Left as originally written since it's the doc's own
+opening motivation, not a live status claim — see STATUS.md for current
+state.
 
 ---
 
