@@ -25,11 +25,22 @@ lenses' terms to every collector, but this collector is scoped to
 in stats["terms_lens_skipped"] and never swept (keeps API calls, and the
 strict rate limit below, spent only on relevant terms).
 
-Pacing: the keyed tier is documented (and observed live) as 1 request/sec
-with 429s readily returned above that. PACE_SECONDS is kept at 1.1s — a
-hair over the limit — and a 429 gets a linear backoff of
-`3.0 * attempt` seconds before retrying, up to MAX_RETRIES attempts. One
-bad term never kills the run: collect() catches, log_skip()s, and moves on
+Pacing: the keyed tier is documented as 1 request/sec, but live measurement
+(2026-08-04, see INBOX/2026-08-04-...-collect-py-timings-remeasured.md)
+found the 429s are NOT governed by per-request spacing — they're a
+cumulative quota that depletes and recovers over time. Two same-ordered
+runs of the same 8 terms at 1.1s vs 5.0s spacing did equally well or worse
+at 5.0s, and raising PACE_SECONDS bought zero fewer 429s. What the
+retry ladder *does* cost is real: ~70% of this collector's ~23-minute
+lane in that measurement was pure time.sleep() inside failed-then-retried
+requests, against a budget that had not recovered by the time the retry
+fired. MAX_RETRIES was cut from 4 to 2 (2026-08-05) on that evidence —
+a persistently-429ing term is not going to succeed on attempt 3 or 4 any
+more than attempt 2 did, so the extra retries were pure wasted wall-clock.
+LANE_BUDGET_S is a hard wall-clock cap on the whole collect() call: once
+exceeded, remaining terms are skipped loudly rather than swept, so one bad
+day against the quota can't make this lane run indefinitely. One bad term
+never kills the run: collect() catches, log_skip()s, and moves on
 (REBUILD-NOTES.md cross-cutting lesson).
 
 Standalone self-test: `python3 -m collectors.semantic_scholar --term "..." [--lens ai] [--since-days N] [--json]`
@@ -62,8 +73,9 @@ ENDPOINT = "https://api.semanticscholar.org/graph/v1/paper/search"
 FIELDS = "title,publicationDate,externalIds,url,venue"
 LIMIT = 25
 PACE_SECONDS = 1.1
-MAX_RETRIES = 4
+MAX_RETRIES = 2         # was 4 — 2026-08-05, see the module docstring's Pacing note
 RETRY_BACKOFF_S = 3.0
+LANE_BUDGET_S = 600.0   # hard wall-clock cap for the whole collect() call
 TIMEOUT_S = 20.0
 ALLOWED_LENSES = ("ai", "mental-health")
 
@@ -166,6 +178,9 @@ def collect(watch: dict, since: datetime):
     terms_swept = 0
     terms_lens_skipped = 0
     terms_failed = 0
+    terms_budget_skipped = 0
+    lane_start = time.monotonic()
+    budget_exhausted = False
 
     for entry in terms:
         term, lens = _term_and_lens(entry, default_lens)
@@ -174,6 +189,18 @@ def collect(watch: dict, since: datetime):
         if lens not in ALLOWED_LENSES:
             terms_lens_skipped += 1
             continue
+
+        if not budget_exhausted and time.monotonic() - lane_start > LANE_BUDGET_S:
+            budget_exhausted = True
+            log_skip(
+                SOURCE_ID,
+                f"lane wall-clock budget ({LANE_BUDGET_S:.0f}s) exhausted — "
+                "skipping remaining terms rather than let one slow day run indefinitely",
+            )
+        if budget_exhausted:
+            terms_budget_skipped += 1
+            continue
+
         terms_swept += 1
 
         try:
@@ -216,10 +243,17 @@ def collect(watch: dict, since: datetime):
         "terms_swept": terms_swept,
         "terms_lens_skipped": terms_lens_skipped,
         "terms_failed": terms_failed,
+        "terms_budget_skipped": terms_budget_skipped,
         "items_fetched": fetched,
         "items_kept": len(items),
     }
-    log_summary(SOURCE_ID, fetched=fetched, kept=len(items), skipped=terms_failed)
+    log_summary(
+        SOURCE_ID,
+        fetched=fetched,
+        kept=len(items),
+        skipped=terms_failed,
+        note=(f"budget_skipped={terms_budget_skipped}" if terms_budget_skipped else None),
+    )
     return items, provenance
 
 

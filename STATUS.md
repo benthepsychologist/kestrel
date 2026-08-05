@@ -2,7 +2,7 @@
 
 *Hand-maintained, thin by design — build history and decisions live in
 `ROADMAP/DESIGN.md`; the open ledger is its §10. This file answers "what
-state is the engine in right now" and nothing else. **As of 2026-08-02.***
+state is the engine in right now" and nothing else. **As of 2026-08-05.***
 
 **Direction (decided 2026-08-02, not yet built):** kestrel becomes a
 **library the project agent calls**, not a framework projects live inside —
@@ -12,6 +12,21 @@ ontologies and five research methodologies already exist across the fleet.
 
 ## Where things stand
 
+- **`tools/collect.py` no longer runs collectors serially** (2026-08-05):
+  it fans them out across a thread pool instead of one plain `for` loop,
+  so a full sweep's wall clock now collapses toward the single slowest
+  collector's own lane instead of summing every lane (previously ~59-91
+  min). `semantic_scholar`'s own retry policy was also tightened on the
+  same day (fewer retries against what turned out to be a cumulative
+  quota, not a per-request rate, plus a hard wall-clock budget on that
+  one lane). GDELT and OpenAlex were investigated the same day and
+  cleared — both already correctly tuned, no paid tier exists for
+  either that would help. See `ROADMAP/DESIGN.md` §10 for the full
+  writeup and measurements.
+- ⛔ **`lda` collector is currently fully dead** — blocked at the Akamai
+  edge in front of `lda.senate.gov`/`congress.gov`, independent of the
+  API key, confirmed live 2026-08-05. Not a code bug; a legitimate
+  alternate access route is under research (§10).
 - **The engine/instance split is complete** (phases 1–6, all gates
   green, same day): publish core + `theprojection` adapter extracted
   byte-identically; collectors generalized (destinations, poll-wholesale,

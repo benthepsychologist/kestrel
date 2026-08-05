@@ -20,6 +20,8 @@ Usage:
 import argparse
 import os
 import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -143,6 +145,47 @@ def parse_since(raw: str) -> datetime:
     return dt.astimezone(timezone.utc)
 
 
+def _rel(p: Path) -> Path:
+    # buffer/provenance live under INSTANCE_ROOT post-split; the
+    # engine-root relative form is kept for pre-split checkouts
+    for root in (INSTANCE_ROOT, REPO_ROOT):
+        try:
+            return p.relative_to(root)
+        except ValueError:
+            continue
+    return p
+
+
+_print_lock = threading.Lock()
+
+
+def _run_source(source_id: str, watch: dict, since: datetime) -> str:
+    """Run one collector and persist its results. Returns the summary line
+    (never raises — a collector error becomes a skip line, same contract
+    the old sequential loop had). Called from a worker thread; every I/O
+    call inside touches only this source's own buffer/provenance files, so
+    no locking is needed there — only the shared stdout print is locked."""
+    fn = collectors.REGISTRY[source_id]
+    try:
+        items, provenance = fn(watch, since)
+    except Exception as e:  # noqa: BLE001 — one source must never kill the run
+        base.log_skip(source_id, f"collector raised: {e}")
+        return f"[{source_id}] fetched=0 kept=0 skipped_terms=ALL (collector error: {e})"
+
+    buffer_path, kept = base.append_buffer(items, source_id)
+    prov_path = base.write_provenance(provenance)
+
+    stats = provenance.get("stats", {})
+    fetched = stats.get("items_fetched", len(items))
+    terms_failed = stats.get("terms_failed", 0)
+
+    return (
+        f"[{source_id}] fetched={fetched} kept={kept} "
+        f"skipped_terms={terms_failed} buffer={_rel(buffer_path)} "
+        f"provenance={_rel(prov_path)}"
+    )
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--lens", choices=LENSES, default=None)
@@ -182,37 +225,26 @@ def main():
 
     watch = {"terms": terms}
 
-    for source_id in source_ids:
-        fn = collectors.REGISTRY[source_id]
-        try:
-            items, provenance = fn(watch, since)
-        except Exception as e:  # noqa: BLE001 — one source must never kill the run
-            base.log_skip(source_id, f"collector raised: {e}")
-            print(f"[{source_id}] fetched=0 kept=0 skipped_terms=ALL (collector error: {e})")
-            continue
-
-        buffer_path, kept = base.append_buffer(items, source_id)
-        prov_path = base.write_provenance(provenance)
-
-        stats = provenance.get("stats", {})
-        fetched = stats.get("items_fetched", len(items))
-        terms_failed = stats.get("terms_failed", 0)
-
-        def _rel(p):
-            # buffer/provenance live under INSTANCE_ROOT post-split; the
-            # engine-root relative form is kept for pre-split checkouts
-            for root in (INSTANCE_ROOT, REPO_ROOT):
-                try:
-                    return p.relative_to(root)
-                except ValueError:
-                    continue
-            return p
-
-        print(
-            f"[{source_id}] fetched={fetched} kept={kept} "
-            f"skipped_terms={terms_failed} buffer={_rel(buffer_path)} "
-            f"provenance={_rel(prov_path)}"
-        )
+    # Collectors are independent, I/O-bound HTTP calls against different
+    # upstreams (gdelt, semantic_scholar, google_news_rss, ...) — run them
+    # concurrently so one slow/rate-limited lane no longer blocks the
+    # ~17 others behind it. A full sweep's wall clock collapses toward the
+    # single slowest lane instead of the sum of all of them (measured
+    # 2026-08-04/05: semantic_scholar alone ran ~23 min of a ~59-91 min
+    # serial total). Fan-out is ACROSS collectors only — do NOT add
+    # concurrency inside a single collector's own request loop: several
+    # (semantic_scholar, gdelt) pace themselves with a plain time.sleep(),
+    # not a shared limiter, so parallel workers inside one lane would
+    # multiply the request rate into an endpoint already 429ing at its
+    # current rate. See INBOX/2026-07-31-...-serial-gdelt-blocking.md and
+    # INBOX/2026-08-04-...-collect-py-timings-remeasured.md for the
+    # measurements this fixes.
+    with ThreadPoolExecutor(max_workers=len(source_ids)) as pool:
+        futures = {pool.submit(_run_source, sid, watch, since): sid for sid in source_ids}
+        for future in as_completed(futures):
+            line = future.result()
+            with _print_lock:
+                print(line)
 
 
 if __name__ == "__main__":

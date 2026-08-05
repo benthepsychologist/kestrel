@@ -450,6 +450,57 @@ gets its own plan when Ben calls it.
 
 ## §10 Open ledger
 
+- ✅ **`collect.py` source loop fanned out across collectors** — shipped
+  2026-08-05. The runner was a plain sequential `for source_id in
+  source_ids` loop (root cause of the two collect-py-timing INBOX items,
+  07-31 and 08-04): every collector queued behind whatever the slowest
+  one was doing, so a full sweep took the *sum* of every lane (~59-91 min
+  measured). Now a `ThreadPoolExecutor` runs every collector concurrently
+  — each is an independent, I/O-bound HTTP call against a different
+  upstream, so wall clock collapses toward the single slowest lane
+  instead. Deliberately scoped to fan-out ACROSS collectors only: several
+  (`semantic_scholar`, `gdelt`) pace themselves with a bare
+  `time.sleep()`, not a shared limiter, so parallelizing *inside* one of
+  their own request loops would multiply the request rate into an
+  endpoint already 429ing at its current rate.
+- ✅ **`semantic_scholar` retry policy tightened** — shipped 2026-08-05,
+  on the 2026-08-04 measurement that its 429s are a *cumulative quota*
+  that depletes and recovers over time, not a per-request rate (raising
+  `PACE_SECONDS` was tested and bought zero fewer 429s). `MAX_RETRIES`
+  cut 4→2 (a persistently-429ing term wasn't going to succeed on attempt
+  3/4 either — that measurement found ~70% of the lane's ~23 minutes was
+  pure retry-backoff sleep) plus a new `LANE_BUDGET_S` hard wall-clock
+  cap so one bad day against the quota can't run the lane indefinitely.
+- ✅ **GDELT + OpenAlex collectors investigated 2026-08-05, cleared —
+  no code change needed.** Live-tested directly against both APIs from
+  this container: OpenAlex returned 200 OK in 1.4s (keyed, working
+  cleanly — it was only ~5% of a full run's wall-clock, never actually
+  the slow one); GDELT 429'd immediately with its own message
+  confirming the collector's existing ≥5.5s pace + backoff is already
+  correctly tuned to what GDELT's DOC 2.0 API actually enforces.
+  Confirmed (web research) neither API has a paid/commercial tier that
+  would raise these limits — GDELT's DOC API and OpenAlex are both free
+  services rate-limited by design; there's nothing to buy. GDELT's
+  unwired BigQuery route (`_bigquery_stub` in `collectors/gdelt.py`)
+  remains a real option but stays out of scope for the *daily* sweep:
+  BigQuery's GDELT tables lag real-time by 15+ minutes and the route
+  burns the BigQuery free-tier monthly scan allowance — it was scoped
+  for deep historical backward-crawls, not daily use, and that's still
+  right.
+- 📋 **LDA collector fully dead — Akamai edge block, not a code/auth
+  problem.** Live-tested 2026-08-05: `lda.senate.gov`'s API 403s
+  regardless of whether the API key is sent, and so does the bare
+  `lda.senate.gov` homepage, and so does `congress.gov` (a different
+  Senate-family host) — all three from this container's IP, served by
+  `AkamaiGHost` before any application auth is evaluated. `sec.gov` (a
+  different government host, outside that Akamai property) returns 200
+  fine from the same IP. Reads as this container's egress IP being
+  caught by Senate/Congress-side bot-management, not anything kestrel
+  controls or a paid tier would fix. Research dispatched 2026-08-05 for
+  a legitimate alternate access route (bulk data channel, a mirror via
+  `api.congress.gov`/GovInfo, or a third-party republisher) — no
+  evasion of the block itself, matching the standing rule below for
+  CanLII/NCSL.
 - ⛔ **Three §14.1 research artifacts** — chat-history-only; Ben
   exports. Gates §7 finalization + all content, nothing else.
 - ⛔ **LegiScan API key** — tier-1 "backbone"; signup in flight
