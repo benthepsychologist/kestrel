@@ -23,10 +23,14 @@ ontologies and five research methodologies already exist across the fleet.
   cleared — both already correctly tuned, no paid tier exists for
   either that would help. See `ROADMAP/DESIGN.md` §10 for the full
   writeup and measurements.
-- ⛔ **`lda` collector is currently fully dead** — blocked at the Akamai
-  edge in front of `lda.senate.gov`/`congress.gov`, independent of the
-  API key, confirmed live 2026-08-05. Not a code bug; a legitimate
-  alternate access route is under research (§10).
+- ⛔ **`lda` collector is currently fully dead, and no code fix exists**
+  — blocked at the Akamai edge in front of `lda.senate.gov`/
+  `congress.gov`, independent of the API key. Researched 2026-08-05: no
+  legitimate alternate route found (official bulk channel discontinued,
+  `api.congress.gov` has no lobbying data, third-party mirrors are dead
+  or too stale). Only real lever left is direct outreach to Senate
+  OPR/House LRC to request an allowlist — Ben's call, not kestrel's.
+  See `ROADMAP/DESIGN.md` §10.
 - **The engine/instance split is complete** (phases 1–6, all gates
   green, same day): publish core + `theprojection` adapter extracted
   byte-identically; collectors generalized (destinations, poll-wholesale,

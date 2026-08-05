@@ -487,20 +487,31 @@ gets its own plan when Ben calls it.
   burns the BigQuery free-tier monthly scan allowance — it was scoped
   for deep historical backward-crawls, not daily use, and that's still
   right.
-- 📋 **LDA collector fully dead — Akamai edge block, not a code/auth
-  problem.** Live-tested 2026-08-05: `lda.senate.gov`'s API 403s
-  regardless of whether the API key is sent, and so does the bare
-  `lda.senate.gov` homepage, and so does `congress.gov` (a different
-  Senate-family host) — all three from this container's IP, served by
+- ⛔ **LDA collector fully dead — Akamai edge block, no legitimate fix
+  found.** Live-tested 2026-08-05: `lda.senate.gov`'s API (now redirects
+  to `lda.gov`) 403s regardless of whether the API key is sent, and so
+  does the bare homepage, and so does `congress.gov` (same Senate/
+  Congress-family property) — all from this container's IP, served by
   `AkamaiGHost` before any application auth is evaluated. `sec.gov` (a
   different government host, outside that Akamai property) returns 200
-  fine from the same IP. Reads as this container's egress IP being
-  caught by Senate/Congress-side bot-management, not anything kestrel
-  controls or a paid tier would fix. Research dispatched 2026-08-05 for
-  a legitimate alternate access route (bulk data channel, a mirror via
-  `api.congress.gov`/GovInfo, or a third-party republisher) — no
-  evasion of the block itself, matching the standing rule below for
-  CanLII/NCSL.
+  fine from the same IP. **Research dispatched and completed same day,
+  no evasion attempted** (matching the CanLII/NCSL rule above): the
+  official bulk-XML distribution was discontinued 2020-12-31 and its
+  would-be replacement page sits on the same blocked property anyway;
+  `api.congress.gov` works from this IP (confirmed with kestrel's
+  existing DATA_GOV_API_KEY) but has no lobbying-disclosure resource at
+  all — it's bills/members/committees only; ProPublica's Congress API
+  and OpenSecrets' API are both discontinued; the one live third-party
+  mirror (openlobby.us) only serves pre-aggregated analysis ~6 months
+  stale, not per-filing records. **No code fix exists** — `collectors/
+  lda.py` is correct as written; its docstring now documents this
+  plainly and the collector logs a distinct loud warning when 100% of
+  swept terms fail, instead of that reading as an ordinary quiet day.
+  The one real remaining lever is a human one, not a technical one:
+  LDA's registration page lists direct Senate OPR
+  (lobby@sec.senate.gov) / House LRC (lobbyinfo@mail.house.gov)
+  contacts who could plausibly allowlist a key on request — that's
+  outreach for Ben to decide on, not something kestrel resolves itself.
 - ⛔ **Three §14.1 research artifacts** — chat-history-only; Ben
   exports. Gates §7 finalization + all content, nothing else.
 - ⛔ **LegiScan API key** — tier-1 "backbone"; signup in flight

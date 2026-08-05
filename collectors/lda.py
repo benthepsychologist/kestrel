@@ -1,5 +1,26 @@
 """kestrel.collectors.lda — Senate LDA (lobbying disclosure) filings sweep.
 
+⛔ KNOWN DEAD from cloud egress, confirmed 2026-08-05 — not a code bug, do
+not "fix" this by touching auth/pacing/retries. `lda.senate.gov` (now
+redirecting to `lda.gov`) 403s at the Akamai edge — `AkamaiGHost` —
+regardless of whether LDA_API_KEY is sent, and so does the bare homepage
+and `congress.gov` (same Senate/Congress-family property), all from this
+container's IP; `sec.gov` (a different host) works fine from the same IP.
+The block happens before application auth is evaluated, so no key/tier
+fixes it. Researched 2026-08-05 (dispatched investigation, no evasion —
+same standing rule as CanLII/NCSL in ROADMAP/DESIGN.md §10): the official
+bulk-XML distribution was discontinued 2020-12-31 and its replacement page
+is on the same blocked property anyway; api.congress.gov works from this
+IP but has no lobbying-disclosure resource; ProPublica's Congress API and
+OpenSecrets' API are both discontinued; the one live third-party mirror
+(openlobby.us) only serves pre-aggregated analysis, ~6 months stale, not
+per-filing records. No legitimate technical fix exists today — the one
+real lever is a human one: LDA's registration page lists direct Senate
+OPR (lobby@sec.senate.gov) / House LRC (lobbyinfo@mail.house.gov) contacts
+who could plausibly allowlist a key on request. That's outreach, not a
+code change — Ben's call, not this collector's. See ROADMAP/DESIGN.md §10
+for the full research writeup.
+
     GET https://lda.senate.gov/api/v1/filings/
         ?client_name=<term>
         &filing_year=<current UTC year>
@@ -254,6 +275,21 @@ def collect(watch: dict, since: datetime):
         pace(pace_seconds)
 
     items = merge_terms_matched(items)
+
+    if terms_swept > 0 and terms_failed == terms_swept:
+        # Every single swept term failed — this is qualitatively different
+        # from LDA's normal quiet-day behavior (real 0-item successes are
+        # common and correct here, see the module docstring's Client-side
+        # window filter note). A 100% failure rate this uniform is the
+        # signature of the known Akamai edge block (module docstring, top),
+        # not a data-side rate limit — say so loudly rather than let this
+        # read the same as an ordinary quiet run.
+        log_skip(
+            SOURCE_ID,
+            f"ALL {terms_swept} swept term(s) failed — this collector is very "
+            "likely blocked at the network edge (see this module's docstring), "
+            "not experiencing a normal quiet day",
+        )
 
     params = {
         "endpoint": ENDPOINT,
