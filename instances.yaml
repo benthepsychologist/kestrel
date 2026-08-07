@@ -19,6 +19,9 @@ instances:
     site: /workspace/theprojection-site
     render:
       lens_set: "ai · global-capital · mental-health · world-news"
-  - path: /workspace/therapybulletin-data
-    kind: registry
+  - path: /workspace/therapybulletin-data  # renaming to mhinbrief-corpus/-site —
+    kind: standing                         # confirmed 2026-08-08, not yet executed on disk
     site: /workspace/therapybulletin-site
+  - path: /workspace/benthepsychologist-corpus  # adopted 2026-08-07
+    kind: standing                              # no site: yet — publish pipeline
+                                                  # (3 outlets) not built (ROADMAP.md §4)

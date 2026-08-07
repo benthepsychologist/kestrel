@@ -6,8 +6,8 @@ repo, and keep N such targets in sync as the library changes.
 
 A target is one of two shapes:
   - a DATA INSTANCE — has its own `kestrel.yaml` at its root, `kind:` is
-    `attention` or `registry`; gets `common` + `<kind>` skills, `<kind>`
-    agentdocs.
+    `attention` or `standing`; gets `common` + `<kind>` skills,
+    `<kind>` agentdocs.
   - a SITE — no manifest of its own; identified by instances.yaml's `site:`
     backref (some data instance names it as its sibling site); gets `site`
     agentdocs only, no skills (KITS.md §2).
@@ -28,8 +28,8 @@ Usage:
 Library layout this module reads (KITS.md §1, never writes to it except via
 an explicit `--adopt` conflict resolution — see below):
     library/VERSION                              single line, YYYY-MM-DD.N
-    library/skills/<family>/<name>/SKILL.md.tmpl  family: common | attention | registry
-    library/agentdocs/<kind-or-site>/<DOC>.tmpl    kind: attention | registry | site
+    library/skills/<family>/<name>/SKILL.md.tmpl  family: common | attention | standing
+    library/agentdocs/<kind-or-site>/<DOC>.tmpl    kind: attention | standing | site
 
 Selection (KITS.md §2): a data instance of kind K gets family `common` +
 family `K` skills, and `K` agentdocs. A site gets `site` agentdocs only.
@@ -44,7 +44,7 @@ Tokens — plain string substitution, NO logic (KITS.md §1):
     {{instance_path}} {{instance_name}} {{engine_path}} {{site_sibling}}
     {{lens_set}} {{kit_version}}
     (+ whatever extra keys an instance's instances.yaml `render:` mapping
-    supplies — a registry instance with no lens concept simply never
+    supplies — a standing instance with no lens concept simply never
     reaches for {{lens_set}} in its templates, so it never needs one.)
 A token this module has no value for is never faked with an empty string —
 it is simply left OUT of the substitution map, so if a template still
@@ -117,7 +117,7 @@ DEFAULT_LIBRARY = ENGINE_ROOT / "library"
 DEFAULT_INSTANCES = ENGINE_ROOT / "instances.yaml"
 STAMP_RELPATH = ".claude/kit.yaml"
 
-KNOWN_KINDS = ("attention", "registry")  # families under library/skills/, library/agentdocs/
+KNOWN_KINDS = ("attention", "standing")  # families under library/skills/, library/agentdocs/
 TOKEN_PATTERN = re.compile(r"\{\{[^{}]*\}\}")
 
 
@@ -347,7 +347,7 @@ def adapter_status_token(manifest, target_root: Path) -> str:
     (found 2026-08-01, INBOX: therapybulletin's rendered docs claimed an
     adapter was unbuilt when it had shipped days earlier — a hand patch
     fixed that one instance without fixing the template, so the same
-    template would tell the SAME lie to the next registry instance
+    template would tell the SAME lie to the next standing instance
     instantiated before its own adapter exists). No adapter_rel declared
     at all is a distinct, equally real state from declared-but-missing —
     both are reported honestly rather than collapsed into one guess."""

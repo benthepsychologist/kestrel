@@ -1,3 +1,19 @@
+outcome:   Adopted in part, 2026-08-07, revised 2026-08-08 (Ben). The
+           fleet ontology (one species) is design of record. The kind
+           split is NOT the three this item proposed — landed as three
+           for one day (`attention`/`registry`/a new `corpus`), then
+           collapsed to two (`attention` + `standing`, merging
+           `registry` with the new kind) once the actual skill
+           definitions were read side by side and turned out to be the
+           same propose-then-confirm mechanism. See ROADMAP/KITS.md §8
+           (keeps both revisions) and ROADMAP/RESEARCH.md §1.5/§15.
+           Piece 1/2 (superset claim schema, color-team skill) stay
+           open research, not built by this ruling — one real
+           `standing`-kind consumer with no external sources
+           (`benthepsychologist-corpus`) exists so far, not the two
+           this item's own scope fence wanted before building the
+           shared schema.
+
 # The fleet is three instances of one species — unify on a claim-corpus ontology, a superset claim schema, and verification-as-a-dial
 
 from:      kestrel engine session, workshopped live with Ben (2026-07-31

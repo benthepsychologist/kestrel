@@ -21,7 +21,7 @@ provisioning: templates, tokens, stamps, drift discipline, scaffolds.
 | --- | --- |
 | `collectors/` | source modules + registry — `collect(watch, since) -> (items, provenance)`; includes the `page_diff` snapshot-and-diff class |
 | `tools/` | `collect.py` (term-sweep orchestration, fanned out across collectors) · `probe.py` (connectivity smoke test for every registered collector) · `tend.py` (the manifest-driven runner) · `record_diff.py` (diff→changelog) · `kit.py` (render/install/sync the kit library) · `render_read.py`/`readouts.py`/`world_news.py`/`build_world_news.py`/`gdelt_dedup.py`/`pdf_text.py`/`thumbnails.py` (instance-#1 rendering + enrichment stack — headline clustering, GDELT Events ranking, PDF text extraction, og:image thumbnails) · `publish.py` + `publish/core.py` (generic publish CLI + the guarantee engine — no per-site code lives here; each instance's own adapter is declared by its `kestrel.yaml` `outputs.adapter` and lives in that instance repo) |
-| `library/` | the canonical kit: `VERSION` · `skills/{common,attention,registry}/` (templates, six-token vocabulary) · `agentdocs/` · `scaffolds/` (new-repo skeletons, both data kinds + Hugo site) |
+| `library/` | the canonical kit: `VERSION` · `skills/{common,attention,standing}/` (templates, six-token vocabulary) · `agentdocs/` · `scaffolds/` (new-repo skeletons, both data kinds + Hugo site) |
 | `.claude/skills/` | kestrel's only resident skills — the four meta-skills: `install-kit` · `sync-kits` · `instantiate-data` · `instantiate-site` |
 | `instances.yaml` | the fleet registry `sync-kits` sweeps — every data instance + its site sibling |
 | `ROADMAP/` | the two engine design docs |
@@ -41,10 +41,20 @@ Current instances (see `instances.yaml`):
   `theprojection-data` 2026-08-05) — a personal news/attention map
   feeding the site theprojection.org via its own `publish/adapter.py`
   (declared in its `kestrel.yaml`, loaded by kestrel's `tools/publish.py`).
-- **therapybulletin-data** (`kind: registry`) — a compliance-obligation
-  registry (the Therapy Bulletin site) with an append-only changelog,
-  tended by `tend.py`; its own `publish/adapter.py` has been built and
-  publishing live since 2026-08-01.
+- **therapybulletin-data** (`kind: standing`, renaming to
+  `mhinbrief-corpus`/`mhinbrief-site` — confirmed 2026-08-08, not yet
+  executed on disk) — a compliance-obligation registry (the Therapy
+  Bulletin site) with an append-only changelog, tended by `tend.py`; its
+  own `publish/adapter.py` has been built and publishing live since
+  2026-08-01.
+- **benthepsychologist-corpus** (`kind: standing`, adopted 2026-08-07) —
+  Dr. Benjamin F. Armstrong III's clinical writing corpus: a curated
+  body of teaching material and a claim registry with a multi-channel
+  publish pipeline (site, Substack, LinkedIn) not yet built. Self-
+  authored `AGENTS.md`/`CLAUDE.md` (kestrel's own thin `standing`
+  agentdocs are installed but deliberately kept out of the way via
+  `--skip`); no `sources:` declared — its candidates arrive from its own
+  external ingester, not a kestrel sweep.
 
 ## Invariants (from the design docs)
 

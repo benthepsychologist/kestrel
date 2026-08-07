@@ -487,6 +487,26 @@ gets its own plan when Ben calls it.
 
 ## §10 Open ledger
 
+- ✅ **The fleet settled at two kit kinds, `attention` and `standing`,
+  2026-08-07–08** — Ben adopted
+  `INBOX/2026-07-31-kestrel-session-three-instances-one-species.md` in
+  part (fleet ontology; the claim-schema/color-team half stays open
+  research). First landed as three kinds (a new `corpus` kind alongside
+  `attention`/`registry`); revised one day later, after the actual
+  skill definitions were read side by side rather than assumed, into two
+  — `registry` and `corpus` merged into `standing` once their
+  propose-then-confirm loops turned out to be the same mechanism,
+  differing only in where candidates originate (external sweep vs. an
+  external ingester). Design of record, both revisions kept: `ROADMAP/
+  KITS.md` §8. Also ruled: kestrel remains a library at fleet scope, not
+  an agent — a future fleet-wide orchestrator, if warranted, is a
+  separate "fleet-governor" repo that calls kestrel, not kestrel itself.
+  Consumers: `benthepsychologist-corpus` (adopted 2026-08-07) and
+  `therapybulletin-data` (`kind: registry` → `standing`, 2026-08-08) —
+  both installed clean against the merged kit the same day, including a
+  restored "jurisdiction" discipline in `standing`'s `AGENTS.md.tmpl`
+  that the first merge pass had accidentally narrowed (caught by diffing
+  the real install against `registry`'s old template before it shipped).
 - ✅ **Kit templates no longer assert a fixed adapter-build status —
   detected fresh at every render instead.** Closes
   `INBOX/2026-08-01-therapybulletin-data-kit-templates-stale-and-cross-
@@ -603,4 +623,15 @@ gets its own plan when Ben calls it.
   or substitute; **no evasion**.
 - 📋 French/QC source handling (OPQ is page-diff + French).
 - 📋 Newsletter tooling (the rollup's delivery mechanism).
+- 📋 **Fleet health-check / in-flight-visibility / cross-pollination
+  tooling** (named 2026-08-07, `ROADMAP/KITS.md` §8) — `sync-kits` only
+  reports kit-file drift today. Not built: per-instance health beyond
+  kit drift, a "what's each instance working on" pull, and
+  cross-pollination suggestions (promote a proven pattern to the shared
+  library, or flag a feature one instance has that a sibling lacks).
+- 📋 **The "fleet-governor" repo** (`ROADMAP/KITS.md` §8) — undecided
+  whether/when to build. Kestrel stays a library at fleet scope, never
+  the deciding agent; if fleet-wide oversight ever needs one, it's a
+  separate repo that calls kestrel, not kestrel itself. Name, existence,
+  timing all open — revisit once the tooling above exists.
 - 💡 Instance #1 extraction plan (phase 6) — directional until called.

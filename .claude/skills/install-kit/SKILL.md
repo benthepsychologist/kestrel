@@ -5,9 +5,9 @@ description: Render kestrel's library into ONE target repo (a data instance or a
 
 # /install-kit — render + install one target's kit, stamped
 
-Wraps `tools/kit.py install` (ROADMAP/KITS.md §2-§3, "the kit contract").
+Wraps `tools/kit.py install` (ROADMAP/KITS.md §2-§3/§8, "the kit contract").
 One target repo per invocation: a data instance (its own `kestrel.yaml`,
-`kind: attention` or `kind: registry`) or a site (no manifest — identified
+`kind: attention` or `kind: standing`) or a site (no manifest — identified
 by `instances.yaml`'s `site:` backref to some data instance). The target
 gets `common` + `<kind>` skills and `<kind>` agentdocs (a data instance),
 or just `site` agentdocs (a site) — never both, never partial.

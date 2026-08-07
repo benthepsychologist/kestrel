@@ -1,0 +1,61 @@
+<!-- kit: standing/AGENTS@{{kit_version}} — canonical: {{engine_path}}/library/agentdocs/standing/AGENTS.md.tmpl — provenance only. A local edit is fine; kit.py sync will flag drift. Route a wanted template change to kestrel's INBOX/, never a direct edit. -->
+
+# AGENTS.md — {{instance_name}} operating disciplines
+
+This instance's shared disciplines, numbered so they can be cited. They
+inherit kestrel's engine invariants (see `{{engine_path}}/README.md`) and
+add the ones every **standing**-kind instance shares. This file is
+deliberately silent on this instance's own subject, voice, or safety
+rules — those belong in this repo's own hand-authored contract content,
+layered alongside this file, never generated here.
+
+1. **Citation or nothing.** Every record field change carries a source
+   and a verified-as-of date. `record_diff.governance_check` enforces
+   presence mechanically; the curate loop enforces that the source
+   actually says what the record claims — that part is judgment, and it
+   is the operator's.
+2. **The operator confirms every record change.** The agent reads,
+   drafts, and proposes; accept/reject/defer belongs to the human. No
+   batch-accepts, no "obvious" exceptions. A session that can't reach the
+   operator stages and stops.
+3. **The changelog is append-only and complete.** One YAML file per
+   entry, never edited after writing; record creation and retirement are
+   entries too, so the log accounts for the whole corpus, not just
+   mutations of survivors.
+4. **A verified non-change is information.** `/verify` bumps the
+   verified-as-of date on unchanged records and tallies the sweep in a
+   run note; those bumps do NOT emit changelog entries — the changelog
+   records the tracked thing moving, not us looking.
+5. **Candidates are an audit trail.** Pending-item files are resolved in
+   place (`accepted`/`rejected`/`deferred` + why), never deleted; `/tend`
+   (if this instance runs it) stages them, only `/curate` resolves them.
+6. **The manifest is curated, not automated.** Source additions, feed-
+   health demotions, cadence changes — proposed by runs, confirmed by
+   the operator, committed like any other curated change.
+7. **Buffer is cache; everything else is record.** `buffer/` is
+   gitignored, 30-day semantics (if this instance uses it). Candidates,
+   records, changelog, snapshots, provenance: committed, always.
+8. **One content writer per outward channel.** Generated content into
+   any declared channel comes only from this instance's own adapter,
+   which calls the engine's publish core for the guarantees. Site/channel
+   code (templates, hand-authored editorial pages) is that channel's own;
+   this corpus's data never gets hand-transcribed into it.
+9. **Provenance discipline.** Every sweep, verify pass, and publish
+   leaves a dated manifest in `provenance/`. An artifact without a
+   re-fetch manifest is incomplete.
+10. **`yaml.safe_load` or revert.** Every YAML this session or the engine
+    touches.
+11. **Jurisdiction is explicit, not assumed.** This agent/session has
+    direct authority over {{instance_name}} (and its site sibling, if
+    one is declared) — commit and push either without asking first, on
+    request or on reasonable judgment. **kestrel is not in that
+    jurisdiction.** Any change kestrel needs — a skill fix, a template
+    bug, a new kit feature — gets written up as an
+    `INBOX/<date>-{{instance_name}}-<slug>.md` entry there (format: the
+    global CLAUDE.md's "Handing dev work to another repo" section) and
+    left for kestrel's own resident agent or Ben, never committed
+    directly from here.
+12. **Kit edits go to the library, not here.** This file and this
+    instance's skills are rendered kit artifacts — canonical templates
+    live in kestrel's `library/`; a wanted change is the discipline 11
+    brief above, not a direct edit.

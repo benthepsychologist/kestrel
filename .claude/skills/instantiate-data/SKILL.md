@@ -1,6 +1,6 @@
 ---
 name: instantiate-data
-description: Create a brand-new data instance repo (kind attention or registry) from kestrel's library/scaffolds/, render it, git-init it, and install its first kit. Use to stand up instance #N's data repo from scratch. Never touches an existing instance — that's /install-kit or /sync-kits.
+description: Create a brand-new data instance repo (kind attention or standing) from kestrel's library/scaffolds/, render it, git-init it, and install its first kit. Use to stand up instance #N's data repo from scratch. Never touches an existing instance — that's /install-kit or /sync-kits.
 ---
 
 # /instantiate-data — new data instance repo, from scaffold to installed kit
@@ -17,7 +17,7 @@ sweep).
 | input | meaning |
 | --- | --- |
 | `name` | this instance's short name (becomes `kestrel.yaml`'s `name:`, the repo's own identity) |
-| `kind` | `attention` or `registry` — selects `library/scaffolds/data-attention/` or `library/scaffolds/data-registry/` |
+| `kind` | `attention` or `standing` — selects `library/scaffolds/data-attention/` or `library/scaffolds/data-standing/` |
 | `target path` | where the new repo lives on disk — must not already exist (or must be empty) |
 
 ## Steps
@@ -66,7 +66,7 @@ sweep).
 
    ```yaml
      - path: <target-path>
-       kind: <attention|registry>
+       kind: <attention|standing>
        # site: <path>            # add once /instantiate-site creates the
                                   # sibling site repo for this instance
        # render:

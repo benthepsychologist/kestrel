@@ -115,7 +115,7 @@ the kestrel checkout at all. One brand-new target repo per invocation.
 
    ```yaml
      - path: <data instance path>
-       kind: <attention|registry>
+       kind: <attention|standing>
        site: <target-path>
    ```
 

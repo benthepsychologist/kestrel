@@ -1,0 +1,60 @@
+<!-- kit: standing/curate@{{kit_version}} — canonical: {{engine_path}}/library/skills/standing/curate/SKILL.md.tmpl — provenance only. A local edit is fine; kit.py sync will flag drift. Route a wanted template change to kestrel's INBOX/, never a direct edit. -->
+
+# /curate — candidates → records, with the operator, never without
+
+This kind's judgment half, and the skill that carries its spine: **the
+agent drafts, the operator confirms, and no record change is asserted
+without support.** A record here is a claim this corpus is standing
+behind — the entire product is that these claims carry receipts. A
+curate session that shortcuts this is worse than no session.
+
+## The loop
+
+Walk pending candidates — `candidates/*.yaml` with `status: staged` if
+this instance runs `/tend`, or wherever this instance's own upstream
+process delivers them otherwise (an `INBOX/` review queue, for example) —
+oldest first. For each:
+
+1. **Read the source.** Judge: does this item actually change, add, or
+   retire something a record tracks (or should track)? Most items won't
+   — rejection is the common case and is fine.
+2. **Draft, don't assert.** For a real change, draft the record edit (new
+   record in `records/` or field changes to an existing one) and show the
+   operator: the field(s), old → new, the exact source/quote that
+   supports it, and the proposed status.
+3. **Wait for the operator's word.** Accept / reject / defer is theirs.
+   No confirmation in-session → the candidate stays pending. Never
+   batch-accept. Rejection is the no-op, not a failure state.
+4. **On accept, the mechanics are mandatory, in order:**
+   - the record edit MUST carry a source and a verified-as-of date — run
+     the check, don't eyeball it:
+     `python3 -c "import sys; sys.path.insert(0,'{{engine_path}}/tools'); import record_diff as rd, yaml; print(rd.governance_check(yaml.safe_load(open('<record>')), ['source_url','last_verified']))"`
+     — a non-empty result blocks the accept, full stop.
+   - diff proposed vs committed with `record_diff.diff_records()` and
+     write one changelog entry per change via `write_changelog_entry()`
+     into `changelog/` (append-only; the writer refuses to modify an
+     existing file by construction).
+   - `yaml.safe_load` every file you wrote; a parse failure reverts the
+     write (kestrel discipline: safe-load-or-revert).
+5. **Resolve the candidate in place** — append to its record:
+   `status: accepted` + `record_id: <id>` + `resolved: <date>`, or
+   `status: rejected` + `reason: <one line>` (kept, not deleted — the
+   candidate trail is part of the audit record). `deferred` keeps it
+   pending with a `note:`.
+
+## Confidence and honesty
+
+- A change you can't source to a primary reference gets
+  `confidence: low` on the record and says so in the changelog entry —
+  or better, stays deferred until it can be sourced. Never launder a
+  secondary claim into a confident record.
+- Re-verification with no substantive change does NOT emit a per-field
+  changelog entry — that's `/verify`'s lane, recorded in its own run
+  note. The changelog stays a record of the tracked thing moving, not of
+  us looking.
+
+## Close
+
+Summarize: candidates walked / accepted / rejected / deferred, changelog
+entries emitted, records touched. Commit everything in this repo in one
+curate commit.

@@ -217,6 +217,24 @@ Note the boundary holds here too: the stack has a job orchestrator, but a
 corpus agent must not know about it. **Cron plus thin scripts is the
 correct *ungoverned* answer**, not a compromise.
 
+**Ruled 2026-08-07, revised 2026-08-08** (Ben): the fleet is one species,
+and — checked against the actual skill definitions, not assumed — **two
+kinds**, not three: `attention` (theprojection; genuinely unique
+machinery — a board/power-layer ontology, salience/flash, no per-item
+human gate) and `standing` (therapybulletin/mhinbrief-corpus,
+`benthepsychologist-corpus` — a merge of the original `registry` kind
+with a short-lived third `corpus` kind, once it turned out their
+propose-then-confirm loops are the same mechanism differing only in
+where candidates originate). The kind, its kit, and the
+fleet-oversight/steering-wheel architecture (kestrel stays a library at
+fleet scope too — never the deciding agent; that agent, if one is ever
+warranted, lives in its own not-yet-built "fleet-governor" repo and
+calls kestrel) are the design of record in `ROADMAP/KITS.md` §8, which
+keeps both revisions rather than silently overwriting the first. The
+superset claim schema and the color-team skill (Piece 1/2 of the
+proposal this ratifies) stay open research below, not built by the
+ruling.
+
 ---
 
 ## 2. The reframe

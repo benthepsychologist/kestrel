@@ -1,0 +1,68 @@
+# kestrel.yaml — instance manifest (ROADMAP/DESIGN.md §2, ROADMAP/KITS.md §8).
+# Scaffolded by /instantiate-data (kind: standing). The `governance:` block
+# below is the mechanical rule set every standing instance shares (DESIGN.md
+# §2's worked example) — not a literal to this instance. `sources:` and
+# `cadence:` are this instance's own and start commented-out until curated
+# (leave `sources:` out entirely if this instance's candidates arrive some
+# other way — an external ingester, a manual drop — rather than a kestrel
+# sweep; `/tend` reports plainly that there's nothing to sweep when no
+# sources are declared, and `/curate` works the same either way). `outputs:`
+# stays commented until an outward channel exists.
+kind: standing
+name: {{instance_name}}
+contract_version: 1
+layout:
+  schema: schema/record.yaml
+  records: records/
+  changelog: changelog/
+  candidates: candidates/    # runner staging area, if this instance runs /tend —
+                             # curation reads this either way, however items land in it
+  buffer: buffer/            # cache semantics, 30-day — gitignored, created
+                             # on demand, never committed
+  snapshots: snapshots/      # page-diff prior-snapshot store — NOT buffer
+                             # semantics: must outlive the sweep cadence,
+                             # never retention-swept
+  provenance: provenance/    # per-run fetch manifests, same shape
+
+# cadence:
+#   sweep:   # e.g. weekly — the product rhythm ("cadence IS the product"),
+#             # if this instance runs /tend
+#   verify:  # e.g. quarterly — off-season re-verification pass
+
+# sources:
+#   # Only if this instance sweeps external sources for candidates — omit
+#   # this whole block if candidates arrive some other way. Extends the
+#   # proven sources/sources.yaml per-source schema
+#   #   (name endpoint auth cadence recall perishability status notes)
+#   # with: tier · jurisdiction · method · collector · feed_url ·
+#   #        language · health
+#   - id: <source-id>
+#     name: <human-readable name>
+#     tier: 1
+#     jurisdiction: <slug>
+#     method: rss            # or page-diff, etc.
+#     collector: rss
+#     feed_url: <url>        # if method: rss
+#     endpoint: <url>        # if method: page-diff
+#     cadence: <per-source poll cadence>
+#     perishability: durable # or diffable
+#     status: proposed       # wired once actually collecting
+#     health: {last_probe: <date>, verdict: live}
+
+governance:                  # machine-checked by the runner, not habits —
+                              # the mechanical defaults every standing instance shares
+  record_change_requires: [source_url, last_verified]
+  field_diff_emits: changelog
+  yaml: safe-load-or-revert
+  feed_health: auto-demote   # 200-empty / years-stale → page-diff (only relevant if sources: is set)
+  tier3_verify_against: tier1
+
+# outputs:
+#   site: ../{{instance_name}}-site      # or wherever this instance's outward
+#                                        # channel(s) actually publish to
+#   adapter: {{instance_name}}          # this instance's tools/publish
+#                                        # adapter name (see /instantiate-site)
+#
+# Once ready, register this instance in kestrel's own instances.yaml
+# ({path, kind, site}) — that registration is what lets /install-kit and
+# /sync-kits find and render this instance's kit.

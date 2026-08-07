@@ -1,0 +1,34 @@
+# {{instance_name}}-corpus
+
+A **standing** instance tended by the kestrel engine: a curated corpus of
+records, each carrying a source and a verified-as-of date, with an
+append-only changelog. This repo is the data; a paired outward channel
+(a site, a newsletter, whatever this instance's real outlet is) is the
+rendered surface; the engine is the machinery. `kestrel.yaml` at this
+root is the instance manifest (`kind: standing`).
+
+Scaffolded by kestrel's `/instantiate-data` meta-skill (ROADMAP/KITS.md
+§3/§8) from `library/scaffolds/data-standing/`. Next steps, in order:
+
+1. Populate `kestrel.yaml`'s `sources:` (only if this instance sweeps
+   external sources for candidates — leave it out if they arrive some
+   other way), `cadence:`, and `outputs:` blocks (all left as placeholder
+   comments here).
+2. Replace `schema/record.yaml`'s DRAFT stub with this instance's own
+   record shape once its domain research has actually landed — do not
+   finalize it before then. If this instance's real layout doesn't want
+   the full `candidates/`/`records/`/`changelog/`/`schema/` set from day
+   one, that's fine — let the content decide the shape rather than
+   hardening this scaffold's default ahead of it.
+3. Run the engine's kit installer against this repo to bring in this
+   instance's operating skills (`/tend`, `/curate`, `/verify`, `/publish`)
+   and agent docs (`/instantiate-data`'s last step does this
+   automatically; re-run later via `/install-kit` after any library
+   update).
+4. Confirm this instance is registered in kestrel's own `instances.yaml`
+   (the session running `/instantiate-data` shows the exact block to add
+   and appends/commits it separately, in kestrel).
+
+**Never:** edit `records/` outside `/curate`'s mechanics · modify an
+existing `changelog/` entry after it's written (append-only) · let an
+LLM-edited YAML file go unvalidated (`yaml.safe_load` or revert).

@@ -1,0 +1,35 @@
+<!-- kit: standing/CLAUDE@{{kit_version}} — canonical: {{engine_path}}/library/agentdocs/standing/CLAUDE.md.tmpl — provenance only. A local edit is fine; kit.py sync will flag drift. Route a wanted template change to kestrel's INBOX/, never a direct edit. -->
+
+# CLAUDE.md — {{instance_name}} (standing instance)
+
+A **standing** instance tended by the kestrel engine ({{engine_path}}): a
+curated corpus of records, each carrying a source and a verified-as-of
+date, with an **append-only changelog**. This repo is the data; a paired
+site or outward channel is the rendered surface; the engine is the
+machinery. `kestrel.yaml` at this root is the instance manifest
+(`kind: standing`).
+
+**The loop:** `/tend` (sweep declared sources → stage candidates, if this
+instance declares any) → `/curate` (candidates → records,
+operator-confirmed, citation-required) → `/verify` (scheduled
+re-verification) → `/publish` ({{adapter_status}}). Skills live in
+`.claude/skills/` — rendered kit copies; canonical versions live in the
+engine's `library/` (edit there, then `/sync-kits`).
+
+**The posture, non-negotiable:** this corpus states what it tracks with
+receipts. The runner never writes records; the agent drafts and the
+**operator confirms every record change**; no change is asserted without
+a source and a verified-as-of date (mechanically checked, not habitual).
+When a claim can't be sourced primary, it stays a deferred candidate or
+ships flagged `confidence: low` — never laundered.
+
+**This file is deliberately thin on domain specifics.** Kestrel doesn't
+know this instance's real subject, voice, or safety rules beyond the
+shared curate/tend/verify/publish mechanics above — those belong in this
+repo's own operating contract (its README/AGENTS.md content, hand-
+authored, never rendered).
+
+**Never:** edit `records/` outside `/curate`'s mechanics · modify an
+existing `changelog/` file (append-only) · hand-write content into an
+outward channel once its adapter exists (single content writer) · let an
+LLM-edited YAML go unvalidated (`yaml.safe_load` or revert).

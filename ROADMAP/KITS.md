@@ -49,21 +49,22 @@ library/
   VERSION                     # library version stamp (date.counter, e.g. 2026-07-31.1)
   skills/
     common/                   # every instance kind gets these
-      start/  map/
+      map/
     attention/                # kind: attention (news instance)
-      daily/  steer/  crawl/  classify/  week/  publish/
-    registry/                 # kind: registry (compliance instance) — NEW skills
-      tend/  curate/  verify/  publish/
+      start/  daily/  steer/  crawl/  classify/  week/  publish/
+    standing/                 # kind: standing (a curated, sourced-and-confirmed
+      start/  tend/  curate/  verify/  publish/  #  corpus — §8; merged from the
+                              #  original registry kind + a short-lived corpus kind)
   agentdocs/
     attention/       CLAUDE.md.tmpl  AGENTS.md.tmpl
-    registry/        CLAUDE.md.tmpl  AGENTS.md.tmpl
+    standing/        CLAUDE.md.tmpl  AGENTS.md.tmpl  # §8
     site-attention/  CLAUDE.md.tmpl  # site docs for a site whose DATA sibling is kind:attention
-    site-registry/   CLAUDE.md.tmpl  # site docs for a site whose DATA sibling is kind:registry
+    site-standing/   CLAUDE.md.tmpl  # site docs for a site whose DATA sibling is kind:standing
     site/            CLAUDE.md.tmpl  # fallback only — used when the sibling's kind has no
                                       # site-<kind>/ dir yet; sites get docs, not skills either way
   scaffolds/
     data-attention/           # instance-repo skeletons per kind
-    data-registry/            #   (dirs, manifest stub, schema stub, README, LICENSE)
+    data-standing/            #   (dirs, manifest stub, schema stub, README, LICENSE) — §8
     site/                     # Hugo skeleton (therapybulletin-site pattern:
                               #   wrangler.toml, _headers, robots, fonts dir,
                               #   layout set, brand-tokens css stub)
@@ -84,10 +85,11 @@ name its own paths; a library template never does.
 
 ## §2 The kit contract
 
-- **Selection:** the manifest's existing `kind:` (`attention` | `registry`)
-  selects the kit family: `common/` + `<kind>/` skills + `<kind>/`
-  agentdocs. Sites are identified by `instantiate-site` / the sites
-  registry, and receive agentdocs only. **Site agentdocs are themselves
+- **Selection:** the manifest's existing `kind:` (`attention` | `standing` —
+  §8, `standing` added 2026-08-07/08 merging the original `registry` kind
+  with a short-lived third `corpus` kind) selects the kit family: `common/`
+  + `<kind>/` skills + `<kind>/` agentdocs. Sites are identified by
+  `instantiate-site` / the sites registry, and receive agentdocs only. **Site agentdocs are themselves
   per-DATA-KIND** (added 2026-08-04, `tools/kit.py`'s
   `discover_agentdoc_templates`/`agentdoc_kind` resolution): a site's
   content model is dictated by whatever its data sibling emits, so one
@@ -201,3 +203,137 @@ review = main session.
    live on other machines.
 5. Whether `/tend` and `/curate` should be one skill with two modes —
    decide during K4 with real use, not now.
+
+## §8 Two kinds, not three — attention and standing — and what "kestrel's fleet" means (Ben, 2026-08-07–08)
+
+**Ratifies `INBOX/2026-07-31-kestrel-session-three-instances-one-species.md`
+as design of record, in part** — the fleet ontology is adopted; the
+superset claim schema and the color-team skill (that item's Piece 1/Piece
+2) stay open research, tracked in `RESEARCH.md`, not built here. Moved to
+`INBOX/done/` with this section as its outcome.
+
+**This section was written and revised twice in the same 48h window** —
+first landing on three kinds (`attention` / `registry` / a new `corpus`),
+then collapsing to two once the actual skill definitions were read side
+by side instead of assumed. Both revisions are kept below rather than
+silently overwritten; the sequence is the evidence for why the final
+shape is right, not just an assertion of it.
+
+### The ontology
+
+theprojection (`kind: attention`), therapybulletin/**mhinbrief-corpus**
+(rename confirmed 2026-08-08; not yet executed on disk, still
+`/workspace/therapybulletin-data`+`-site`, tracked in STATUS.md), and
+**benthepsychologist-corpus** are **one species**: each a steered, sourced
+corpus with a publish surface, differing in *what feeds it* and *where
+the human approval gate sits* — never in the shape of the pipeline.
+Ben, verbatim: *"It's not a feed like theprojection and mhinbrief, but
+functionally it's the same shape, it just uses different data and source
+inputs (sanitized transcript outputs, my writings, etc.)."*
+
+**Every instance repo is named `<project>-corpus`** (`RESEARCH.md` §1.4,
+decided 2026-08-02, predates this section) — that convention is
+orthogonal to `kind:` and applies to all of them regardless of kind. A
+first pass at this section named the new kind `corpus` too, which
+collided with that pre-existing, broader usage of the same word and is
+exactly what surfaced the deeper question below (Ben: "these are all
+corpuses, which messes up the kind distinction"). `manuscript` (the
+original 2026-07-31 proposal's name) was considered next and rejected —
+Ben: "it's not a manuscript... that implies ONE" (a singular, bounded
+work converging to done, which is wrong for an ongoing multi-channel
+publishing operation). The word that survived scrutiny: **`standing`** —
+a standing record, continuously kept current, and (not incidentally) it
+avoids a second collision: `attention/board.yaml`'s own actor taxonomy
+already uses `state` as a structural-kind value (house/state/kingdom),
+so `kind: state` would have repeated the exact `corpus` mistake one
+level down.
+
+### Checked, not assumed: do attention and the new kind actually differ?
+
+Ben's instruction was explicit: *"it's really about claim/provenance
+architecture and whether the skills they use and the things they need
+functionally differ... go check."* So the check happened — all eight
+`attention`/`registry` skill templates were read side by side, not
+reasoned about abstractly:
+
+- **`attention` is the real outlier.** `daily`/`steer`/`crawl`/`classify`/
+  `week` carry a large amount of domain-specific machinery that has
+  nothing to do with a claim/citation workflow at all: a board ontology
+  (house/state/kingdom, three capital axes, posture derivation), a
+  salience/flash-rail system, per-lens sweep logic, an expectations
+  ledger, a weekly decay review. None of it generalizes. It is also the
+  one kind with **no per-item human gate** — publish-then-correct,
+  mechanical backstops only, corrections via the next digest.
+- **`registry`'s `/curate` and the new kind's planned review loop are the
+  same mechanism.** `registry/curate`'s loop (walk pending items, draft
+  — never assert, wait for the operator's explicit accept/reject/defer,
+  append-only audit trail, nothing canonical without a citation) is,
+  mechanically, what `benthepsychologist-corpus/ROADMAP.md` §3 already
+  describes wanting for its own review queue (sanitized suggestions in
+  `INBOX/`, draft → approved, "the agent proposes, the clinician
+  approves — rejection is the no-op"). The only real difference is
+  **where candidates originate** — `registry`'s `/tend` sweeps external
+  sources declared in `kestrel.yaml`'s `sources:`; the new kind's
+  candidates arrive however its own upstream process delivers them (an
+  external ingester, for `benthepsychologist-corpus`). That is a
+  manifest/configuration difference (does this instance declare
+  `sources:` or not), not a different skill family.
+
+**Conclusion: two kinds, not three.** `attention` stays exactly as it
+is. `registry` and the proposed third kind **merge into `kind:
+standing`** — one skill family (`tend`/`curate`/`verify`/`publish`,
+`common/map`), where `/tend` and `/verify` simply report "nothing
+declared, nothing to do" for an instance with no `sources:` rather than
+being a separate, smaller kind. `benthepsychologist-corpus` and
+`therapybulletin-data`/`-mhinbrief-corpus` are now the same `kind:
+standing` — the former with `sources:` unset (candidates arrive
+elsewhere), the latter with a real, populated `sources:` list.
+
+### Deliberately minimal where content hasn't landed — the ceiling principle still applies
+
+`standing`'s skill set is the full four-skill loop (unlike this
+section's first-pass `corpus` kind, which shipped `publish` only) — the
+loop is genuinely shared, so there's no reason to withhold `/tend`,
+`/curate`, `/verify` from an instance that hasn't wired sources yet; they
+just have nothing to do until it does. What stays deliberately NOT
+built, same reasoning as before: the superset claim schema and
+color-team skill (Piece 1/2 of the source proposal) — the ceiling
+principle (`RESEARCH.md` §1.4 — don't promote ahead of the content's
+real shape; `benthepsychologist-corpus/ROADMAP.md` §2: "let the content
+suggest it") and the two-real-consumers rule (a shared schema designed
+against one instance is the premature abstraction already rejected once
+for therapybulletin's still-DRAFT record schema).
+
+### What "kestrel's fleet" means, and the fleet-captain / steering-wheel split
+
+Ben's scope for fleet oversight, verbatim in spirit: kestrel should be able
+to **health-check** every instance, **see what each is working on**, **scan
+the fleet for drift**, and **suggest cross-pollination** — a pattern proven
+in one instance promoted up into the shared library, or a feature one
+channel has that another lacks, flagged across. `sync-kits` already does
+the narrowest slice of this (kit-file drift only, three-state: clean /
+behind / dirty). The other three — health, in-flight-work visibility, and
+cross-pollination suggestions — **do not exist as tooling yet.** Named here
+as the next real build item on this ladder, not built speculatively this
+session.
+
+**The architecture that scope sits inside, ruled this session:** kestrel
+does not become the agent that acts on any of this. It is **not the fleet
+captain** — the same "library, not a framework" ruling that put a project's
+resident agent in the project and had it *call* kestrel (`RESEARCH.md`
+§1.2) applies one level up, unchanged: if fleet-wide oversight ever needs a
+deciding agent — one with its own memory, making judgment calls about what
+a drift report or a cross-pollination suggestion means — that agent lives
+in **its own repo** (a "fleet-governor," name and existence both
+undecided, not built), and it *calls* kestrel's fleet-scoped operations the
+same way any single instance's resident agent calls kestrel's
+instance-scoped ones. Ben, verbatim: *"kestrel COULD be the fleet captain
+and manage everything everyone is doing, it would just have to do so in a
+separate 'fleet-governor' repo. So... it still wouldn't be the captain. It
+would just be the steering wheel the captain uses."* **Kestrel is the
+steering wheel, never the captain — at instance scope (already true) and
+at fleet scope (ruled now).** This is a distinct axis from kestrel's own
+development possibly becoming cloud-governor-governed one day
+(`RESEARCH.md` §15) — that is about who governs kestrel's *build*, not
+about kestrel governing the fleet; the two are not the same decision and
+this section rules on neither by ruling on the other.
